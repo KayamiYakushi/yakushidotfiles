@@ -1,0 +1,24 @@
+# Machine-local Yakushi state
+.config/hypr/monitors.local.lua
+.config/hypr/yakushi-monitor-state.local.json
+.config/hypr/*.yakushi-last-good
+.config/hypr/*.local.lua
+.config/hypr/*.local.json
+
+# Runtime/cache/state
+**/__pycache__/
+*.pyc
+*.log
+*.bak
+*.tmp
+.validation/
+.cache/
+state/
+last-good/
+
+# Personal media
+.config/fastfetch/pfp3.png
+
+# Editor/OS files
+.DS_Store
+*~
