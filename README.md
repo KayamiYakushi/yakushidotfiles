@@ -65,7 +65,6 @@ Yakushi Dotfiles expects these tools to be available:
 - Python 3
 - Kitty
 - Thunar
-- Dunst
 - NetworkManager / `nm-applet`
 - `wl-clipboard`
 - `cliphist`
@@ -156,6 +155,8 @@ Yakushi Settings stores it locally in:
 The tracked `monitors.lua` stays generic so another user's machine does not inherit the original monitor names, resolutions, refresh rates, or positions.
 
 ## Notes
+
+- Desktop notifications are disabled by default; no notification daemon is autostarted.
 
 - Disabled keybinds keep their metadata while releasing the shortcut for another active bind.
 - Rofi opacity changes the launcher background alpha.
