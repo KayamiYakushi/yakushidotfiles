@@ -39,11 +39,11 @@ for name in $managed
     cp -a "$src" "$dst"
 end
 
-# Machine-local monitor state must never come from the repository.
+# Never inherit the publisher's monitor topology.
 rm -f "$HOME/.config/hypr/monitors.local.lua"
 rm -f "$HOME/.config/hypr/yakushi-monitor-state.local.json"
 
-mkdir -p "$HOME/Pictures/Wallpapers"
+mkdir -p "$HOME/.cache/quickshell/wallpaper-index"
 mkdir -p "$HOME/.cache/quickshell/thumbs"
 
 echo
@@ -62,8 +62,12 @@ for cmd in $required
     end
 end
 
+if not command -q magick; and not command -q convert
+    set -a missing imagemagick
+end
+
 if test (count $missing) -gt 0
-    echo "Missing commands:"
+    echo "Missing commands/packages:"
     for cmd in $missing
         echo "  - $cmd"
     end
@@ -86,5 +90,6 @@ disown
 echo
 echo "Yakushi Dotfiles installed."
 echo "Backup: $backup"
-echo "Wallpaper folder: ~/Pictures/Wallpapers/"
+echo "Wallpaper source: ~/Documents (recursive)"
 echo "Yakushi Settings: SUPER + I"
+echo "Wallpaper selector: SUPER + W"

@@ -64,7 +64,7 @@ PanelWindow {
 
         folder: "file://" + main.expandHome(configs.wallpaper_path)
         showDirs: false
-        nameFilters: ["*.png", "*.jpg"]
+        nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.PNG", "*.JPG", "*.JPEG", "*.WEBP"]
         sortField: FolderListModel.Name
     }
 

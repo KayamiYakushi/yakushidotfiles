@@ -36,7 +36,7 @@ hl.config({
     input = {
         kb_layout = "tr",
         follow_mouse = 1,
-        sensitivity = 0.5,
+        sensitivity = 0.57,
         touchpad = {
             natural_scroll = false,
             tap_to_click = true,

@@ -39,7 +39,7 @@ yakushi_bind("browser", "SUPER + B", hl.dsp.exec_cmd(browser))
 -- YAKUSHI_BIND settings|Launchers|Yakushi Settings
 yakushi_bind("settings", "SUPER + I", hl.dsp.exec_cmd("qs ipc call settings toggle"))
 -- YAKUSHI_BIND wallpaper|Launchers|Wallpaper Selector
-yakushi_bind("wallpaper", "SUPER + W", hl.dsp.exec_cmd("qs -n -p ~/.config/quickshell/hyprquickpaper"))
+yakushi_bind("wallpaper", "SUPER + W", hl.dsp.exec_cmd("~/.config/quickshell/hyprquickpaper/launch.sh"))
 
 -- Session / window basics
 -- YAKUSHI_BIND close|Windows|Close Window

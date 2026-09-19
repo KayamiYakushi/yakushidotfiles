@@ -1,5 +1,5 @@
 {
-    "wallpaper_path": "~/Pictures/Wallpapers/",
+    "wallpaper_path": "~/.cache/quickshell/wallpaper-index/",
     "cache_path": "~/.cache/quickshell/thumbs/",
     "number_of_pictures": 10,
     "border_color": "#80FFFFFF",
