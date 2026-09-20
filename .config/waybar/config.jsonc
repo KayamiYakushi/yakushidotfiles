@@ -23,7 +23,7 @@
         "format": "CPU {usage}%"
     },
     "memory": {
-        "interval": 1,
+        "interval": 5,
         "format": "RAM {used:0.2f} GB",
         "tooltip-format": "{used:0.2f} GB / {total:0.2f} GB"
     },
