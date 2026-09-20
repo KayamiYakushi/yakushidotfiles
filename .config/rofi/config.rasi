@@ -7,7 +7,7 @@ configuration {
     font: "JetBrainsMono Nerd Font 13";
 
     location: 0;
-    fixed-num-lines: true;
+    fixed-num-lines: false;
     show-icons: true;
     sidebar-mode: false;
     scroll-method: 1;
@@ -47,7 +47,7 @@ configuration {
 window {
     location: center;
     width: 420px;
-    height: 420px;
+
     background-color: @bg;
     border: 2px;
     border-color: @border-color;
@@ -96,9 +96,9 @@ listview {
     border: 0;
     spacing: 6px;
     padding: 4px 0;
-    lines: 8;
+    lines: 6;
     columns: 1;
-    fixed-height: true;
+    fixed-height: false;
     scrollbar: false;
 }
 
