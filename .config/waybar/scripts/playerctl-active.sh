@@ -1,27 +1,22 @@
 #!/usr/bin/env bash
 
-STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/waybar-active-player"
+if command -v playerctld >/dev/null 2>&1; then
+    if ! pgrep -x playerctld >/dev/null 2>&1; then
+        playerctld daemon >/tmp/yakushi-playerctld.log 2>&1 &
+        sleep 0.2
+    fi
 
-# Find a currently playing player
-while read -r PLAYER; do
-    if [[ "$(playerctl --player="$PLAYER" status 2>/dev/null)" == "Playing" ]]; then
-        echo "$PLAYER" > "$STATE_FILE"
-        echo "$PLAYER"
+    if playerctl --player=playerctld status >/dev/null 2>&1; then
+        echo "playerctld"
+        exit 0
+    fi
+fi
+
+while read -r player; do
+    if [[ "$(playerctl --player="$player" status 2>/dev/null)" == "Playing" ]]; then
+        echo "$player"
         exit 0
     fi
 done < <(playerctl -l 2>/dev/null)
-
-# Nothing is playing.
-# Use the last player we knew about.
-if [[ -f "$STATE_FILE" ]]; then
-    PLAYER="$(cat "$STATE_FILE")"
-
-    if playerctl --player="$PLAYER" status >/dev/null 2>&1; then
-        echo "$PLAYER"
-        exit 0
-    fi
-
-    rm -f "$STATE_FILE"
-fi
 
 exit 1
