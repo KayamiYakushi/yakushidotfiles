@@ -24,8 +24,8 @@
     },
     "memory": {
         "interval": 1,
-        "format": "RAM {percentage}%",
-        "tooltip-format": "{used} / {total}GiB"
+        "format": "RAM {used:0.2f} GB",
+        "tooltip-format": "{used:0.2f} GB / {total:0.2f} GB"
     },
     "custom/gpu": {
         "exec": "~/.config/waybar/scripts/gpu_usage.sh",
