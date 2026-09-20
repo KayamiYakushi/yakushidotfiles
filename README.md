@@ -156,6 +156,9 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 ## Notes
 
+- Yakushi Settings always opens on the **System** page.
+- The System page includes a clickable persistent image slot; the selected image stays local and is not tracked by Git.
+
 - Desktop notifications are disabled by default; no notification daemon is autostarted.
 
 - Disabled keybinds keep their metadata while releasing the shortcut for another active bind.

@@ -22,3 +22,6 @@ last-good/
 # Editor / OS
 .DS_Store
 *~
+
+# User-selected Yakushi Settings image
+.config/quickshell/assets/system-profile

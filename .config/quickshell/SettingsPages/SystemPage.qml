@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Dialogs
 import Quickshell.Io
 import "../"
 
@@ -6,6 +7,7 @@ Item {
     id: page
 
     property string homeDir: ""
+    property url profileSource: ""
 
     property string hostname: "..."
     property string uptime: "..."
@@ -44,8 +46,45 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 page.homeDir = text.trim()
+
+                if (page.homeDir !== "")
+                    page.profileSource = "file://" + page.homeDir + "/.config/quickshell/assets/system-profile"
             }
         }
+    }
+
+    // ------------------------------------------------------------
+    // SYSTEM IMAGE
+    // ------------------------------------------------------------
+
+    FileDialog {
+        id: profilePicker
+
+        title: "Choose System Image"
+
+        nameFilters: [
+            "Images (*.png *.jpg *.jpeg *.webp)",
+            "All files (*)"
+        ]
+
+        onAccepted: {
+            var selectedUrl = selectedFile.toString()
+            var localPath = decodeURIComponent(selectedUrl.replace("file://", ""))
+
+            page.profileSource = selectedFile
+
+            pSaveProfile.command = [
+                "python3",
+                page.homeDir + "/.config/quickshell/scripts/yakushi-profile-image.py",
+                localPath
+            ]
+
+            pSaveProfile.running = true
+        }
+    }
+
+    Process {
+        id: pSaveProfile
     }
 
     // ------------------------------------------------------------
@@ -232,25 +271,99 @@ Item {
 
             spacing: 24
 
-            Item {
+            Rectangle {
+                id: profileFrame
+
                 width: 150
                 height: 150
 
+                color: Theme.alpha(Theme.bgCard, 0.72)
+
+                radius: 4
+
+                border.width: profileMouse.containsMouse ? 1 : 0
+                border.color: Theme.accent
+
+                clip: true
+
                 Image {
-                    anchors.centerIn: parent
+                    id: profileImage
 
-                    source: page.homeDir !== ""
-                        ? "file://" + page.homeDir + "/.config/fastfetch/pfp3.png"
-                        : ""
+                    anchors.fill: parent
+                    anchors.margins: 5
 
-                    width: 140
-                    height: 140
+                    source: page.profileSource
 
-                    fillMode: Image.PreserveAspectFit
+                    fillMode: Image.PreserveAspectCrop
 
                     smooth: true
                     mipmap: true
                     asynchronous: true
+                    cache: false
+                }
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    visible: profileImage.status !== Image.Ready
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        text: "󰋩"
+
+                        color: Theme.textDim
+
+                        font.family: Theme.iconFont
+                        font.pixelSize: 22
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        text: "ADD IMAGE"
+
+                        color: Theme.textDim
+
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        font.letterSpacing: 2
+                    }
+                }
+
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+
+                    height: 25
+
+                    visible: profileImage.status === Image.Ready && profileMouse.containsMouse
+
+                    color: Theme.alpha("#000000", 0.72)
+
+                    Text {
+                        anchors.centerIn: parent
+
+                        text: "CHANGE IMAGE"
+
+                        color: Theme.text
+
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        font.letterSpacing: 1
+                    }
+                }
+
+                MouseArea {
+                    id: profileMouse
+
+                    anchors.fill: parent
+
+                    hoverEnabled: true
+
+                    onClicked: profilePicker.open()
                 }
             }
 

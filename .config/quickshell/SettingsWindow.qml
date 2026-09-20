@@ -24,9 +24,21 @@ PanelWindow {
 
     property bool showing: false
 
-    function show()   { showing = true }
-    function hide()   { showing = false }
-    function toggle() { showing = !showing }
+    function show() {
+        selectedIndex = 0
+        showing = true
+    }
+
+    function hide() {
+        showing = false
+    }
+
+    function toggle() {
+        if (!showing)
+            selectedIndex = 0
+
+        showing = !showing
+    }
 
     // Bind a Hyprland key to this, e.g. in hyprland.conf:
     //   bind = SUPER, S, exec, qs ipc call settings toggle
