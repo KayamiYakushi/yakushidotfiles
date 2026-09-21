@@ -117,3 +117,15 @@ tooltip label {
     font-size: 13px;
 }
 
+/* Runtime-only empty-state override. */
+@import url("mpris-state.css");
+
+/* Yakushi Now Playing hover:
+ * same 11px -> 13px growth as RAM/CPU,
+ * without changing the center capsule outer height.
+ */
+#custom-mpris-marquee:hover {
+    font-size: 13px;
+    margin-top: -1px;
+    margin-bottom: -1px;
+}
