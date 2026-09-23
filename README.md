@@ -11,8 +11,11 @@ A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal gl
 I lowkey dont know what to type here.
 There is a simple waybar with these modules;
 -[Left] RAM usage (GB-wise), CPU usage (Percentage), CPU temperature, GPU temperature
+
 -[Middle] Now playing (It shows the song playing woah)
+
 -[Right] Volume, Date, Clock, Power button
+
 - Area screenshot + clipboard — `SUPER + SHIFT + S`
 
 ## Preview
