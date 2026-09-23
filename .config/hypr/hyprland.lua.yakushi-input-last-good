@@ -13,15 +13,15 @@ browser    = "flatpak run app.zen_browser.zen"
 ---- AUTOSTART ----
 
 hl.on("hyprland.start", function()
+    hl.exec_cmd("playerctld daemon")
     hl.exec_cmd("waybar")
-    hl.exec_cmd("dunst")
-    hl.exec_cmd("nm-applet")
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
-    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+    hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
+    hl.exec_cmd("hyprsunset")
+    hl.exec_cmd("sleep 1.5 && python3 ~/.config/hypr/scripts/yakushi-nightlightctl.py restore")
 
     hl.exec_cmd("awww-daemon")
-    hl.exec_cmd("sleep 2 && qs")
 end)
 
 ---- ENVIRONMENT VARIABLES ----
@@ -36,7 +36,7 @@ hl.config({
     input = {
         kb_layout = "tr",
         follow_mouse = 1,
-        sensitivity = 0.57,
+        sensitivity = -0.60,
         touchpad = {
             natural_scroll = false,
             tap_to_click = true,

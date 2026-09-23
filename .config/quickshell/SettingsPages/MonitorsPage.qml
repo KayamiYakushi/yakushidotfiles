@@ -1,12 +1,15 @@
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import "../"
 
 Item {
     id: page
+
+    property var hostWindow: null
     clip: true
 
-    property string homeDir: ""
+    property string homeDir: Quickshell.env("HOME") || ""
     property var monitors: []
     property string selectedName: ""
     property int selectedWidth: 0
@@ -26,6 +29,10 @@ Item {
 
     function helperPath() {
         return homeDir + "/.config/hypr/scripts/yakushi-monitorctl.py"
+    }
+
+    function nightlightHelperPath() {
+        return homeDir + "/.config/hypr/scripts/yakushi-nightlightctl.py"
     }
 
     function currentMonitor() {
@@ -170,35 +177,59 @@ Item {
         return Math.round(2500 + value * 4000)
     }
 
-    function startNightlight(value, delay) {
-        var temp = nightlightTemperature(value)
+    function nightlightValueForTemperature(temperature) {
+        return Math.max(0, Math.min(1, (temperature - 2500) / 4000))
+    }
 
-        nightlightProcess.command = [
-            "sh",
-            "-c",
-            "pkill -x gammastep 2>/dev/null; "
-                + "sleep " + delay + "; "
-                + "nohup gammastep -O " + temp
-                + " >/dev/null 2>&1 &"
-        ]
+    function syncNightlightState(result) {
+        if (!result)
+            return
+
+        page.nightlightEnabled = Boolean(result.enabled)
+
+        var temperature = Number(result.temperature)
+        if (!isNaN(temperature))
+            page.nightlightValue = nightlightValueForTemperature(temperature)
+
+        if (result.ok === false) {
+            page.statusText = result.message || "Night Light command failed."
+            page.statusError = true
+        }
+    }
+
+    function runNightlightCommand(args) {
+        if (homeDir === "" || nightlightProcess.running)
+            return
+
+        var command = ["python3", nightlightHelperPath()]
+        for (var i = 0; i < args.length; ++i)
+            command.push(args[i])
+
+        nightlightProcess.command = command
         nightlightProcess.running = true
+    }
+
+    function loadNightlightState() {
+        runNightlightCommand(["status"])
     }
 
     function nightlightOn() {
-        nightlightEnabled = true
-        startNightlight(nightlightValue, "0.05")
+        runNightlightCommand([
+            "set",
+            String(nightlightTemperature(nightlightValue))
+        ])
     }
 
     function nightlightOff() {
-        nightlightEnabled = false
-        nightlightProcess.command = ["pkill", "-x", "gammastep"]
-        nightlightProcess.running = true
+        runNightlightCommand(["off"])
     }
 
     function commitNightlight(value) {
         nightlightValue = value
-        if (nightlightEnabled)
-            startNightlight(value, "0.03")
+        runNightlightCommand([
+            "temperature",
+            String(nightlightTemperature(value))
+        ])
     }
 
     function commitBrightness(value) {
@@ -330,18 +361,10 @@ Item {
         return { x: x, y: y }
     }
 
-    Process {
-        id: homeProc
-        command: ["sh", "-c", "printf '%s' \"$HOME\""]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                page.homeDir = text.trim()
-                page.refresh()
-                brightnessGet.running = true
-            }
-        }
+    Component.onCompleted: {
+        page.refresh()
+        brightnessGet.running = true
+        page.loadNightlightState()
     }
 
     Process {
@@ -486,7 +509,22 @@ Item {
     }
 
     Process { id: brightnessSet; stdout: StdioCollector {} stderr: StdioCollector {} }
-    Process { id: nightlightProcess; stdout: StdioCollector {} stderr: StdioCollector {} }
+    Process {
+        id: nightlightProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    page.syncNightlightState(JSON.parse(text))
+                } catch (e) {
+                    page.statusText = "Night Light returned invalid state."
+                    page.statusError = true
+                }
+            }
+        }
+
+        stderr: StdioCollector {}
+    }
 
     Row {
         id: headerRow

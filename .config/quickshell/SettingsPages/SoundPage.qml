@@ -5,6 +5,8 @@ import "../"
 Item {
     id: page
 
+
+    property var hostWindow: null
     // =========================
     // Global layout controls
     // =========================

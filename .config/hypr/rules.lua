@@ -48,3 +48,29 @@ hl.window_rule({
     match = { title = "^(Save File)$" },
     float = true,
 })
+
+-- Yakushi Settings file pickers
+hl.window_rule({
+    name = "yakushi-login-background-picker",
+    match = { title = "^(Choose Login Screen Background)$" },
+    float = true,
+    center = true,
+    size = { 980, 640 },
+})
+
+hl.window_rule({
+    name = "yakushi-system-image-picker",
+    match = { title = "^(Choose System Image)$" },
+    float = true,
+    center = true,
+    size = { 980, 640 },
+})
+
+-- Yakushi custom image picker
+hl.window_rule({
+    name = "float-yakushi-image-picker",
+    match = { title = "^(Yakushi Image Picker)$" },
+    float = true,
+    center = true,
+    size = { 980, 640 },
+})

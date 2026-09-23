@@ -1,9 +1,5 @@
 import Quickshell
 
-// Entry point. Quickshell always loads this file first.
-// Everything visible lives in its own component file next to this one;
-// this file just mounts them under one ShellRoot.
-ShellRoot {
-    VolumeOsd {}
-    SettingsWindow {}
-}
+// Yakushi runtime is fully on-demand.
+// Settings and Volume OSD each run in their own short-lived Quickshell process.
+ShellRoot {}

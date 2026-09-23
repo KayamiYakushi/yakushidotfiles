@@ -5,6 +5,8 @@ import "../"
 Item {
     id: page
 
+
+    property var hostWindow: null
     property bool wifiEnabled: true
     property var networks: []
     property bool scanning: false

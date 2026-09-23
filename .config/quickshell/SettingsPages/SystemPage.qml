@@ -1,11 +1,14 @@
 import QtQuick
 import QtQuick.Dialogs
+import QtQuick.Controls as QQC
 import Quickshell.Io
 import "../"
 
 Item {
     id: page
 
+
+    property var hostWindow: null
     property string homeDir: ""
     property url profileSource: ""
 
@@ -59,6 +62,21 @@ Item {
 
     FileDialog {
         id: profilePicker
+
+        options: FileDialog.DontUseNativeDialog
+        parentWindow: page.hostWindow
+        popupType: QQC.Popup.Window
+        // Temporarily lower the layer-shell Settings surface so the
+        // native/system file chooser can stack above it and receive input.
+        onVisibleChanged: {
+            if (!page.hostWindow)
+                return
+
+            if (visible)
+                page.hostWindow.beginExternalDialog()
+            else
+                page.hostWindow.endExternalDialog()
+        }
 
         title: "Choose System Image"
 

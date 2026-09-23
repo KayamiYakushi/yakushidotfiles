@@ -28,8 +28,8 @@ A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal gl
 - Recursive wallpaper selector — `SUPER + W`
 - Minimal Waybar:
   - Left: RAM, CPU usage, CPU temperature, GPU temperature
-  - Center: currently playing
-  - Right: volume, clock, power
+  - Center: native MPRIS now playing
+  - Right: volume, English date, 12-hour clock, power
 - Area screenshot + clipboard — `SUPER + SHIFT + S`
 
 ## Preview
@@ -65,13 +65,13 @@ Yakushi Dotfiles expects these tools to be available:
 - Python 3
 - Kitty
 - Thunar
-- NetworkManager / `nm-applet`
+- NetworkManager / `nmcli`
 - `wl-clipboard`
 - `cliphist`
 - `grim`
 - `slurp`
 - `brightnessctl`
-- `gammastep`
+- `hyprsunset`
 - `playerctl`
 - `pavucontrol`
 - `wlogout`
@@ -154,6 +154,15 @@ Yakushi Settings stores it locally in:
 
 The tracked `monitors.lua` stays generic so another user's machine does not inherit the original monitor names, resolutions, refresh rates, or positions.
 
+## Runtime architecture
+
+- Yakushi Settings runs on demand and exits completely when closed.
+- The Volume OSD runs in a short-lived Quickshell process and exits after use.
+- Waybar uses native MPRIS through `playerctld`; legacy polling scripts are not used.
+- CPU and GPU temperatures are read natively by Waybar from sysfs/hwmon.
+- Machine-local hwmon paths are generated into `~/.config/waybar/hardware.local.jsonc`.
+- Night Light uses `hyprsunset` and restores the last saved state at startup.
+
 ## Notes
 
 - Yakushi Settings always opens on the **System** page.
@@ -164,7 +173,7 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 - Disabled keybinds keep their metadata while releasing the shortcut for another active bind.
 - Rofi opacity changes the launcher background alpha.
 - Waybar opacity controls the three main bar containers together.
-- CPU and GPU temperature modules discover their sensors dynamically instead of relying on a fixed `hwmonN` path.
+- CPU and GPU temperature modules use machine-local stable hwmon parent paths instead of relying on a fixed `hwmonN` number.
 - User-specific display connectors are kept out of the repository.
 
 ## Credits

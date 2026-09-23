@@ -13,14 +13,15 @@ browser    = "flatpak run app.zen_browser.zen"
 ---- AUTOSTART ----
 
 hl.on("hyprland.start", function()
+    hl.exec_cmd("playerctld daemon")
     hl.exec_cmd("waybar")
-    hl.exec_cmd("nm-applet")
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
-    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+    hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
+    hl.exec_cmd("hyprsunset")
+    hl.exec_cmd("sleep 1.5 && python3 ~/.config/hypr/scripts/yakushi-nightlightctl.py restore")
 
     hl.exec_cmd("awww-daemon")
-    hl.exec_cmd("sleep 2 && qs")
 end)
 
 ---- ENVIRONMENT VARIABLES ----

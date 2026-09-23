@@ -38,7 +38,7 @@ window#waybar {
 #custom-gpu,
 #clock,
 #pulseaudio,
-#custom-mpris-marquee,
+#mpris,
 #custom-power,
 #temperature {
     padding: 0 10px;
@@ -53,7 +53,7 @@ window#waybar {
 }
 
 /* MPRIS */
-#custom-mpris-marquee {
+#mpris {
     padding: 0 10px;
 }
 
@@ -90,7 +90,7 @@ tooltip label {
 #temperature,
 #clock,
 #pulseaudio,
-#custom-mpris-marquee {
+#mpris {
     transition: font-size 0.15s ease;
 }
 
@@ -100,20 +100,55 @@ tooltip label {
 #temperature:hover,
 #clock:hover,
 #pulseaudio:hover,
-#custom-mpris-marquee:hover {
+#mpris:hover {
     font-size: 13px;
 }
 
 /* Yakushi temperature modules */
-#custom-cpu_temp,
-#custom-gpu_temp {
+#temperature.cpu,
+#temperature.gpu {
     padding: 0 10px;
     margin: 0 3px;
     min-width: 0;
 }
 
-#custom-cpu_temp:hover,
-#custom-gpu_temp:hover {
+#temperature.cpu:hover,
+#temperature.gpu:hover {
     font-size: 13px;
 }
 
+
+/* Yakushi Now Playing hover:
+ * same 11px -> 13px growth as RAM/CPU,
+ * without changing the center capsule outer height.
+ */
+#mpris:hover {
+    font-size: 13px;
+    margin-top: -1px;
+    margin-bottom: -1px;
+}
+
+/* Yakushi native MPRIS Phase 4 */
+
+/* Native event-driven MPRIS capsule.
+ * The container stays transparent; the module itself owns the capsule so
+ * nothing remains visible when no MPRIS player exists.
+ */
+.modules-center {
+    background-color: transparent;
+    margin: 0;
+}
+
+#mpris {
+    background-color: rgba(20, 20, 20, 0.5);
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 4px 0 2px;
+    transition: font-size 0.15s ease;
+}
+
+#mpris:hover {
+    font-size: 13px;
+    margin-top: 3px;
+    margin-bottom: 1px;
+}

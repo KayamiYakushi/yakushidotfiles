@@ -1,4 +1,5 @@
 {
+    "include": ["~/.config/waybar/hardware.local.jsonc"],
     "layer": "top",
     "position": "top",
     "exclusive": true,
@@ -7,23 +8,24 @@
     "modules-left": [
         "memory",
         "cpu",
-        "custom/cpu_temp",
-        "custom/gpu_temp"
+        "temperature#cpu",
+        "temperature#gpu"
     ],
     "modules-center": [
-        "custom/mpris-marquee"
+        "mpris"
     ],
     "modules-right": [
         "pulseaudio",
+        "clock#date",
         "clock",
         "custom/power"
     ],
     "cpu": {
-        "interval": 1,
+        "interval": 2,
         "format": "CPU {usage}%"
     },
     "memory": {
-        "interval": 5,
+        "interval": 10,
         "format": "RAM {used:0.2f} GB",
         "tooltip-format": "{used:0.2f} GB / {total:0.2f} GB"
     },
@@ -34,8 +36,14 @@
         "tooltip": true,
         "tooltip-format": "Skylake-H GT2: {}%"
     },
+    "clock#date": {
+        "interval": 60,
+        "format": "{:%a %d %b}",
+        "locale": "C",
+        "tooltip": false
+    },
     "clock": {
-        "format": "{:%H:%M}",
+        "format": "{:%I:%M %p}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "month",
@@ -44,13 +52,24 @@
             }
         }
     },
-    "custom/mpris-marquee": {
-        "exec": "~/.config/waybar/scripts/mpris-marquee.sh",
-        "return-type": "json",
-        "format": "{}",
-        "on-click": "playerctl --player=\"$(~/.config/waybar/scripts/playerctl-active.sh)\" play-pause",
-        "on-click-right": "playerctl --player=\"$(~/.config/waybar/scripts/playerctl-active.sh)\" next",
-        "on-click-middle": "playerctl --player=\"$(~/.config/waybar/scripts/playerctl-active.sh)\" previous"
+    "mpris": {
+        "player": "playerctld",
+        "format": "♪  {dynamic}",
+        "format-paused": "♪  {dynamic}",
+        "format-stopped": "♪  {dynamic}",
+        "dynamic-order": [
+            "title",
+            "artist"
+        ],
+        "dynamic-importance-order": [
+            "title",
+            "artist"
+        ],
+        "dynamic-separator": " - ",
+        "dynamic-len": 30,
+        "title-len": 30,
+        "artist-len": 30,
+        "tooltip-format": "{title} - {artist}"
     },
     "pulseaudio": {
         "format": "{icon}  {volume}%",
@@ -64,23 +83,11 @@
         },
         "tooltip": false,
         "on-click": "pavucontrol",
-        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        "on-click-right": "~/.config/quickshell/scripts/volume-osd.sh mute"
     },
     "custom/power": {
         "format": "⏻",
         "tooltip": false,
         "on-click": "pgrep -x wlogout >/dev/null || wlogout -b 1 -c 20 -r 20 -L 1700 -R 1700 -T 325 -B 325"
-    },
-    "custom/cpu_temp": {
-        "exec": "~/.config/waybar/scripts/yakushi_cpu_temp.sh",
-        "interval": 2,
-        "format": "{}",
-        "tooltip": false
-    },
-    "custom/gpu_temp": {
-        "exec": "~/.config/waybar/scripts/yakushi_gpu_temp.sh",
-        "interval": 2,
-        "format": "{}",
-        "tooltip": false
     }
 }

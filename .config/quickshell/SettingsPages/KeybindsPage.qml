@@ -4,6 +4,8 @@ import "../"
 
 Item {
     id: page
+
+    property var hostWindow: null
     clip: true
 
     property string homeDir: ""

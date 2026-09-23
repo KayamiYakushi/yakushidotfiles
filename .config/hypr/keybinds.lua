@@ -37,7 +37,7 @@ yakushi_bind("files", "SUPER + E", hl.dsp.exec_cmd(fileManager))
 -- YAKUSHI_BIND browser|Launchers|Browser
 yakushi_bind("browser", "SUPER + B", hl.dsp.exec_cmd(browser))
 -- YAKUSHI_BIND settings|Launchers|Yakushi Settings
-yakushi_bind("settings", "SUPER + I", hl.dsp.exec_cmd("qs ipc call settings toggle"))
+yakushi_bind("settings", "SUPER + I", hl.dsp.exec_cmd("~/.config/quickshell/scripts/toggle-settings.sh"))
 -- YAKUSHI_BIND wallpaper|Launchers|Wallpaper Selector
 yakushi_bind("wallpaper", "SUPER + W", hl.dsp.exec_cmd("~/.config/quickshell/hyprquickpaper/launch.sh"))
 
@@ -198,11 +198,11 @@ yakushi_bind("move_ws_10", "SUPER + SHIFT + 0", hl.dsp.window.move({ workspace =
 
 -- Media keys
 -- YAKUSHI_BIND volume_up|Media|Volume Up
-yakushi_bind("volume_up", "XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+yakushi_bind("volume_up", "XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.config/quickshell/scripts/volume-osd.sh up"), { locked = true, repeating = true })
 -- YAKUSHI_BIND volume_down|Media|Volume Down
-yakushi_bind("volume_down", "XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
+yakushi_bind("volume_down", "XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.config/quickshell/scripts/volume-osd.sh down"), { locked = true, repeating = true })
 -- YAKUSHI_BIND volume_mute|Media|Mute
-yakushi_bind("volume_mute", "XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
+yakushi_bind("volume_mute", "XF86AudioMute", hl.dsp.exec_cmd("~/.config/quickshell/scripts/volume-osd.sh mute"), { locked = true })
 -- YAKUSHI_BIND media_play|Media|Play / Pause
 yakushi_bind("media_play", "XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 -- YAKUSHI_BIND media_next|Media|Next Track

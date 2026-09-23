@@ -5,6 +5,8 @@ import "../"
 Item {
     id: page
 
+
+    property var hostWindow: null
     property string homeDir: ""
     property real launcherOpacity: 0.8
     property real topBarOpacity: 0.5

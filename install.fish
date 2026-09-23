@@ -46,12 +46,15 @@ rm -f "$HOME/.config/hypr/yakushi-monitor-state.local.json"
 mkdir -p "$HOME/.cache/quickshell/wallpaper-index"
 mkdir -p "$HOME/.cache/quickshell/thumbs"
 
+# Detect stable hwmon paths once; Waybar reads sysfs natively at runtime.
+python3 "$HOME/.config/waybar/scripts/generate-hardware-local.py"
+
 echo
 echo "Checking commands..."
 
 set -l required \
     hyprctl qs waybar rofi python3 kitty thunar \
-    wl-copy cliphist grim slurp brightnessctl \
+    wl-copy cliphist grim slurp brightnessctl hyprsunset \
     playerctl pavucontrol wlogout awww jq
 
 set -l missing

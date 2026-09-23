@@ -1,6 +1,5 @@
 
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pipewire
 import QtQuick
@@ -9,20 +8,32 @@ import "SettingsPages"
 PanelWindow {
     id: root
 
+    signal dismissed()
+
     anchors { top: true; left: true; right: true; bottom: true }
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
 
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: root.showing ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.layer: root.externalDialogOpen ? WlrLayer.Bottom : WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: (root.showing && !root.externalDialogOpen) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // Only actually grab input/paint when open - mirrors the OSD's mask trick
     // so the window is a no-op on the compositor while closed.
     mask: Region {
-        item: root.showing ? backdrop : null
+        item: (root.showing && !root.externalDialogOpen) ? backdrop : null
     }
 
     property bool showing: false
+    property int externalDialogDepth: 0
+    property bool externalDialogOpen: externalDialogDepth > 0
+
+    function beginExternalDialog() {
+        externalDialogDepth += 1
+    }
+
+    function endExternalDialog() {
+        externalDialogDepth = Math.max(0, externalDialogDepth - 1)
+    }
 
     function show() {
         selectedIndex = 0
@@ -30,7 +41,11 @@ PanelWindow {
     }
 
     function hide() {
+        if (!showing)
+            return
+
         showing = false
+        dismissed()
     }
 
     function toggle() {
@@ -38,15 +53,6 @@ PanelWindow {
             selectedIndex = 0
 
         showing = !showing
-    }
-
-    // Bind a Hyprland key to this, e.g. in hyprland.conf:
-    //   bind = SUPER, S, exec, qs ipc call settings toggle
-    IpcHandler {
-        target: "settings"
-        function toggle(): void { root.toggle() }
-        function show(): void { root.show() }
-        function hide(): void { root.hide() }
     }
 
     // -------------------------
@@ -80,6 +86,7 @@ PanelWindow {
     property var navItems: [
         { name: "System",     icon: "󰒓", page: "SystemPage" },
         { name: "Appearance", icon: "󰏘", page: "AppearancePage" },
+        { name: "Login Screen", icon: "󰌾", page: "LoginScreenPage" },
         { name: "Keybinds",    icon: "󰌌", page: "KeybindsPage" },
         { name: "Input",       icon: "󰍽", page: "InputPage" },
         { name: "Sound",      icon: "\uf028", page: "SoundPage" },
@@ -268,6 +275,11 @@ PanelWindow {
                         id: pageLoader
                         anchors.fill: parent
                         source: "SettingsPages/" + root.navItems[root.selectedIndex].page + ".qml"
+
+                        onLoaded: {
+                            if (item)
+                                item.hostWindow = root
+                        }
 
                         opacity: 0
                         Component.onCompleted: opacity = 1

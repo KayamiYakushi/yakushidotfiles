@@ -1,0 +1,13 @@
+[SddmGreeterTheme]
+Name=Yakushi
+Description=Minimal Yakushi login theme
+Author=KayamiYakushi
+License=MIT
+Type=sddm-theme
+Version=1.1
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=yakushi
+Theme-API=2.0
+
+QtVersion=6
