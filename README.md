@@ -8,29 +8,11 @@ A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal gl
 
 ## Highlights
 
-- **Yakushi Settings** — `SUPER + I`
-- Appearance controls for:
-  - settings panel opacity
-  - Rofi launcher opacity
-  - Waybar opacity
-- Editable keybinds with persistent **ON / OFF** state
-- Searchable installed XKB layouts
-- Pointer sensitivity control
-- Monitor configuration with:
-  - resolution
-  - refresh rate
-  - scale
-  - exact X/Y position
-  - draggable display layout
-  - machine-local persistence
-- Night Light control with visible Kelvin value
-- Raycast-style Rofi launcher
-- Rofi power menu — `SUPER + GRAVE` (official repositories only)
-- Recursive wallpaper selector — `SUPER + W`
-- Minimal Waybar:
-  - Left: RAM, CPU usage, CPU temperature, GPU temperature
-  - Center: native MPRIS now playing
-  - Right: volume, English date, 12-hour clock, power
+I lowkey dont know what to type here. (AI write most of the part)
+There is a simple waybar with these modules;
+[Left] RAM usage (GB-wise), CPU usage (Percentage), CPU temperature, GPU temperature
+[Middle] Now playing (It shows the song playing woah)
+[Right] Volume, Date, Clock, Power button
 - Area screenshot + clipboard — `SUPER + SHIFT + S`
 
 ## Preview
@@ -99,7 +81,7 @@ The default browser is Firefox, installed automatically from the official Arch r
 
 Change the browser command in your Hyprland configuration if you prefer a different browser.
 
-## Main shortcuts
+## Main shortcuts (THEY ARE ALL EASY TO CHANGE)
 
 | Shortcut | Action |
 | --- | --- |
