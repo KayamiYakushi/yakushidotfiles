@@ -1,5 +1,7 @@
 # 薬 Yakushi Dotfiles
 
+My motto is: neither AUR or any non-official arch repos used, as optimized as possible, no background service runs unless its needed.
+
 A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal glassy Waybar, a Raycast-style Rofi launcher, and practical desktop controls.
 
 <p align="center">
