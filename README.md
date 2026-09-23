@@ -25,6 +25,7 @@ A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal gl
   - machine-local persistence
 - Night Light control with visible Kelvin value
 - Raycast-style Rofi launcher
+- Rofi power menu — `SUPER + GRAVE` (official repositories only)
 - Recursive wallpaper selector — `SUPER + W`
 - Minimal Waybar:
   - Left: RAM, CPU usage, CPU temperature, GPU temperature
@@ -38,13 +39,17 @@ The screenshot above shows the current Yakushi desktop layout and Yakushi Settin
 
 ## Installation
 
-Clone the repository:
+Clone the repository and run the installer:
 
 ```fish
 git clone https://github.com/KayamiYakushi/yakushidotfiles.git
 cd yakushidotfiles
-fish install.fish
+sh install.sh
 ```
+
+`install.sh` bootstraps Fish when needed, then `install.fish` installs the required packages from the official Arch repositories,
+creates a timestamped backup, installs the desktop configuration, configures the
+Yakushi SDDM theme, and enables the required services. No AUR helper is required.
 
 The installer creates a timestamped backup under:
 
@@ -56,7 +61,7 @@ before replacing the managed configuration directories.
 
 ## Runtime tools
 
-Yakushi Dotfiles expects these tools to be available:
+Yakushi Dotfiles uses the following runtime tools. The installer installs them automatically from the official Arch repositories:
 
 - Hyprland
 - Quickshell
@@ -64,20 +69,25 @@ Yakushi Dotfiles expects these tools to be available:
 - Rofi
 - Python 3
 - Kitty
-- Thunar
+- Nautilus
+- Firefox
 - NetworkManager / `nmcli`
+- BlueZ / `bluetoothctl`
 - `wl-clipboard`
 - `cliphist`
 - `grim`
 - `slurp`
 - `brightnessctl`
 - `hyprsunset`
+- `hyprlock`
 - `playerctl`
 - `pavucontrol`
-- `wlogout`
 - `awww`
 - `jq`
 - ImageMagick
+- SDDM
+- `hyprpolkitagent`
+- `qt6ct`
 - Nerd Fonts
 
 Recommended fonts:
@@ -85,28 +95,25 @@ Recommended fonts:
 - `JetBrainsMono Nerd Font`
 - `Noto Sans CJK JP`
 
-The default browser command in this setup is Zen Browser via Flatpak:
+The default browser is Firefox, installed automatically from the official Arch repositories.
 
-```text
-flatpak run app.zen_browser.zen
-```
-
-Change the browser command in your Hyprland configuration if you use a different browser.
+Change the browser command in your Hyprland configuration if you prefer a different browser.
 
 ## Main shortcuts
 
 | Shortcut | Action |
 | --- | --- |
 | `SUPER + I` | Yakushi Settings |
-| `SUPER + D` | App launcher |
-| `SUPER + T` | Terminal |
+| `SUPER + SPACE` | App launcher |
+| `SUPER + Q` | Terminal |
 | `SUPER + E` | File manager |
 | `SUPER + B` | Browser |
-| `SUPER + Q` | Close window |
+| `SUPER + C` | Close window |
 | `SUPER + V` | Clipboard history |
 | `SUPER + SHIFT + S` | Area screenshot + clipboard |
 | `SUPER + W` | Wallpaper selector |
 | `SUPER + TAB` | Lock screen |
+| `SUPER + GRAVE` | Power menu |
 
 ## Wallpaper selector
 

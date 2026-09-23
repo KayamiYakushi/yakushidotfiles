@@ -6,8 +6,8 @@
 mainMod    = "SUPER"
 terminal   = "kitty"
 menu       = "rofi -show drun"
-fileManager = "thunar"
-browser    = "flatpak run app.zen_browser.zen"
+fileManager = "nautilus"
+browser    = "firefox"
 
 
 ---- AUTOSTART ----

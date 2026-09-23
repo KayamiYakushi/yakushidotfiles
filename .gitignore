@@ -26,3 +26,6 @@ last-good/
 # User-selected Yakushi Settings image
 .config/quickshell/assets/system-profile
 .config/waybar/hardware.local.jsonc
+__pycache__/
+*.syntax-broken-*
+*.before-*

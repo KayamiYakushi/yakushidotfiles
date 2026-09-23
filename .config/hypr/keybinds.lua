@@ -47,7 +47,7 @@ yakushi_bind("close", "SUPER + C", hl.dsp.window.close())
 -- YAKUSHI_BIND lock|System|Lock Screen
 yakushi_bind("lock", "SUPER + Tab", hl.dsp.exec_cmd("hyprlock"))
 -- YAKUSHI_BIND power|System|Power Menu
-yakushi_bind("power", "SUPER + GRAVE", hl.dsp.exec_cmd("pgrep -x wlogout >/dev/null || wlogout -b 1 -c 20 -r 20 -L 1700 -R 1700 -T 325 -B 325"))
+yakushi_bind("power", "SUPER + GRAVE", hl.dsp.exec_cmd("$HOME/.config/rofi/scripts/yakushi-power-menu.sh"))
 -- YAKUSHI_BIND fullscreen|Windows|Fullscreen
 yakushi_bind("fullscreen", "SUPER + F", hl.dsp.window.fullscreen({ mode = 0 }))
 -- YAKUSHI_BIND opacity|Windows|Window Opacity
@@ -77,7 +77,7 @@ yakushi_bind("keyboard_layout", "SUPER + X", hl.dsp.exec_cmd("hyprctl switchxkbl
 
 -- Toggle float window, center and resize
 -- YAKUSHI_BIND float|Windows|Toggle Floating
-yakushi_bind("float", "SUPER + V", function()
+yakushi_bind("float", "SUPER + SHIFT + V", function()
     hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
 
     local w = hl.get_active_window()
