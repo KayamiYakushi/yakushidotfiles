@@ -2,7 +2,7 @@
 
 My motto is: neither AUR or any non-official arch repos used, as optimized as possible, no background service runs unless its needed.
 
-A compact Hyprland desktop setup built around a custom **Settings** panel, a minimal glassy Waybar, a Raycast-style Rofi launcher, and practical desktop controls.
+A compact Hyprland desktop setup built around a custom **Settings** panel, an island-style top bar, a Raycast-style Rofi launcher, and practical desktop controls.
 
 <p align="center">
   <img src="assets/preview.png" alt="Desktop preview">
@@ -10,16 +10,32 @@ A compact Hyprland desktop setup built around a custom **Settings** panel, a min
 
 ## Highlights
 
-I lowkey dont know what to type here.
-There is a simple waybar with these modules;
+The top bar is an **island**: a small notch hanging from the top edge of the screen, built with Quickshell.
+It shows workspaces, RAM usage (GB), CPU usage (%), CPU temperature, GPU temperature, now playing,
+volume, date (`Fri 23 Oct`), time (with seconds) and a power button.
 
--[Left] RAM usage (GB-wise), CPU usage (Percentage), CPU temperature, GPU temperature
-
--[Middle] Now playing (It shows the song playing woah)
-
--[Right] Volume, Date, Clock, Power button
-
-- Optional clock seconds: `SUPER + I` → Appearance → **Show seconds**
+- Configure it in `SUPER + I` → **Top Bar**: turn any module on or off, reorder modules with the
+  arrows, show or hide seconds, switch between 24- and 12-hour time, change the opacity — all
+  applied instantly.
+- Hover the song and a now-playing card drops down right below it (the rest of the island
+  stays put): cover art, title and artist, a live music visualizer (cava), a seekable progress
+  bar with elapsed / remaining time, and previous / play-pause / next. The visualizer can run
+  on hover (default), always, or never.
+- Hover the volume for a slider.
+- Prefer the classic look? Pick **Waybar** under Top Bar → Style. Seconds and opacity carry over.
+- `SUPER + SHIFT + W` hides or shows the bar.
+- The power button (or ``SUPER + ` ``) opens a power menu that drops down from the island:
+  Lock, Suspend, Log out, Restart, Shut down, plus uptime. Log out / Restart / Shut down ask for
+  a second click, so a stray click is harmless; arrows + Enter and Esc work from the keyboard.
+  With the Waybar style the same menu appears as a matching rofi panel.
+- `SUPER + I` → **Appearance**: ten accent colours plus any custom `#rrggbb`, window gaps
+  (screen edges and between windows), rounded or sharp corners with an adjustable radius,
+  an optional window shadow with adjustable size, and an optional window border whose colour
+  follows the accent or any `#rrggbb`. Shadow and border are stored in the machine-local
+  `~/.config/hypr/window.local.lua`.
+- Island controls: click a workspace dot to switch (scroll to step through), click the song to
+  play/pause (right-click: next, middle-click: previous), click volume to mute (scroll: ±5%,
+  right-click: mixer), hover RAM for used / total.
 
 - Area screenshot + clipboard — `SUPER + SHIFT + S`
 
@@ -159,9 +175,17 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 - Settings runs on demand and exits completely when closed.
 - The Volume OSD runs in a short-lived Quickshell process and exits after use.
-- Waybar uses native MPRIS through `playerctld`; legacy polling scripts are not used.
-- CPU and GPU temperatures are read natively by Waybar from sysfs/hwmon.
-- Machine-local hwmon paths are generated into `~/.config/waybar/hardware.local.jsonc`.
+- The island bar is event-driven: workspaces (Hyprland IPC), now playing (MPRIS), volume
+  (PipeWire) and the clock update only when something changes. The only timer reads
+  `/proc/stat`, `/proc/meminfo` and two hwmon files every 2 seconds, without spawning processes;
+  modules that are turned off are not read. The clock ticks every second only while seconds are shown.
+- cava runs only while the visualizer is on screen and music is playing; otherwise no process runs.
+- Top bar settings live in `~/.config/quickshell/yakushi-topbar.local.json` (machine-local).
+- `~/.config/quickshell/scripts/yakushi-bar.sh start|stop|toggle|restart` controls the bar.
+- Waybar (optional style) uses native MPRIS through `playerctld`; legacy polling scripts are not used.
+- CPU and GPU temperatures are read from sysfs/hwmon; the sensors are detected at start-up
+  (Waybar's paths are generated into `~/.config/waybar/hardware.local.jsonc`). NVIDIA's
+  proprietary driver exposes no hwmon sensor, so the GPU temperature is hidden there.
 - Night Light uses `hyprsunset` and restores the last saved state at startup.
 
 ## Notes
@@ -173,7 +197,7 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 - Disabled keybinds keep their metadata while releasing the shortcut for another active bind.
 - Rofi opacity changes the launcher background alpha.
-- Waybar opacity controls the three main bar containers together.
+- Top bar opacity applies to the island and to Waybar's three containers.
 - CPU and GPU temperature modules use machine-local stable hwmon parent paths instead of relying on a fixed `hwmonN` number.
 - User-specific display connectors are kept out of the repository.
 

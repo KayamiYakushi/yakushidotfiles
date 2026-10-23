@@ -14,7 +14,8 @@ browser    = "firefox"
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("playerctld daemon")
-    hl.exec_cmd("waybar")
+    -- Top bar: Island or Waybar, chosen in Settings -> Top Bar
+    hl.exec_cmd("sh ~/.config/quickshell/scripts/yakushi-bar.sh start")
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
     hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
@@ -74,6 +75,9 @@ hl.config({
         enabled = true,
     },
 })
+
+-- Window shadow and border chosen in Settings -> Appearance (machine-local)
+pcall(dofile, os.getenv("HOME") .. "/.config/hypr/window.local.lua")
 
 hl.curve("easeOut", { type = "bezier", points = { {0.05, 0.9}, {0.1, 1.0} } })
 

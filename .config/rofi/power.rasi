@@ -1,0 +1,90 @@
+/* Yakushi power menu (used when the bar style is Waybar; the island bar has
+   its own menu). Five tiles in a row, matching the island look. The accent
+   colour is passed in by scripts/yakushi-power-menu.sh. */
+
+configuration {
+    show-icons: false;
+    hover-select: true;
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
+}
+
+* {
+    accent: #ffffff;
+    bg: #050505eb;
+    fg: #e6e6e6;
+    dim: #7a7a7a;
+    tile: #ffffff0b;
+    edge: #ffffff12;
+
+    font: "JetBrainsMono Nerd Font 10";
+    background-color: transparent;
+    text-color: @fg;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location: center;
+    width: 540px;
+    background-color: @bg;
+    border: 1px;
+    border-color: @edge;
+    border-radius: 24px;
+    padding: 20px;
+}
+
+mainbox {
+    children: [ "message", "listview" ];
+    spacing: 16px;
+}
+
+message {
+    padding: 0 6px;
+}
+
+textbox {
+    text-color: @dim;
+    font: "JetBrainsMono Nerd Font 9";
+}
+
+listview {
+    columns: 5;
+    lines: 1;
+    fixed-columns: true;
+    fixed-height: true;
+    dynamic: false;
+    cycle: true;
+    scrollbar: false;
+    spacing: 10px;
+}
+
+element {
+    orientation: vertical;
+    padding: 18px 0 14px 0;
+    border: 1px;
+    border-color: @edge;
+    border-radius: 16px;
+    background-color: @tile;
+    cursor: pointer;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: @tile;
+    text-color: @fg;
+}
+
+element selected.normal {
+    background-color: rgba(255, 255, 255, 0.07);
+    border-color: @accent;
+    text-color: @accent;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    text-color: inherit;
+    cursor: inherit;
+}

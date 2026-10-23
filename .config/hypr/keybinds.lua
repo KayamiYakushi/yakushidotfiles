@@ -60,8 +60,8 @@ yakushi_bind("mouse_move", "SUPER + mouse:272", hl.dsp.window.drag(), { mouse = 
 yakushi_bind("mouse_resize", "SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Waybar / clipboard
--- YAKUSHI_BIND waybar|System|Toggle Waybar
-yakushi_bind("waybar", "SUPER + SHIFT + W", hl.dsp.exec_cmd("sh -c 'pgrep -x waybar >/dev/null && pkill waybar || nohup waybar >/dev/null 2>&1 &'"))
+-- YAKUSHI_BIND waybar|System|Toggle Top Bar
+yakushi_bind("waybar", "SUPER + SHIFT + W", hl.dsp.exec_cmd("sh ~/.config/quickshell/scripts/yakushi-bar.sh toggle"))
 -- YAKUSHI_BIND clipboard|Utilities|Clipboard History
 yakushi_bind("clipboard", "SUPER + V", hl.dsp.exec_cmd("pgrep -x rofi >/dev/null && pkill -x rofi || cliphist list | rofi -dmenu -p '' | cliphist decode | wl-copy"))
 

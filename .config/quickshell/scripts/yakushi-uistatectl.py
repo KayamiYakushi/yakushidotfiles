@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -113,6 +114,23 @@ def set_state(opacity_raw: str, accent: str) -> None:
         except OSError:
             pass
         raise
+
+    # Let the island top bar and an accent-coloured window border follow the
+    # new accent (best effort, neither blocks).
+    for args in (
+        ["qs", "-p", str(DIR / "topbar-shell.qml"), "ipc", "call", "topbar", "reload"],
+        ["python3", str(Path.home() / ".config/hypr/scripts/yakushi-windowctl.py"), "sync"],
+    ):
+        try:
+            subprocess.Popen(
+                args,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except OSError:
+            pass
 
     emit({"ok": True})
 

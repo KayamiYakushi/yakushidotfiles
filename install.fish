@@ -40,6 +40,7 @@ set -l packages \
     hyprlock \
     playerctl \
     pavucontrol \
+    cava \
     awww \
     jq \
     imagemagick \
@@ -247,11 +248,8 @@ if set -q HYPRLAND_INSTANCE_SIGNATURE
     echo "Reloading Hyprland..."
     hyprctl reload 2>/dev/null; or true
 
-    echo "Restarting Waybar..."
-    pkill waybar 2>/dev/null; or true
-    sleep 0.25
-    waybar >/tmp/yakushi-waybar-install.log 2>&1 &
-    disown
+    echo "Restarting the top bar..."
+    sh "$HOME/.config/quickshell/scripts/yakushi-bar.sh" restart
 else
     echo
     echo "No active Hyprland session detected."

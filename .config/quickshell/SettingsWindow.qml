@@ -105,11 +105,11 @@ PanelWindow {
     // -------------------------
     // The page area runs to the card's right edge. `rightInset` pulls a page
     // back inside the frame (28px = the card's inner padding). Pages that
-    // already keep their own right margin (Sound, Network, Bluetooth) and
-    // Appearance (which insets itself) use 0.
+    // already keep their own right margin (Sound, Network, Bluetooth) use 0.
     property var navItems: [
         { name: "System",     icon: "󰒓", page: "SystemPage", rightInset: 28 },
-        { name: "Appearance", icon: "󰏘", page: "AppearancePage", rightInset: 0 },
+        { name: "Appearance", icon: "󰏘", page: "AppearancePage", rightInset: 28 },
+        { name: "Top Bar",    icon: String.fromCodePoint(0xF1513), page: "TopBarPage", rightInset: 28 },
         { name: "Login Screen", icon: "󰌾", page: "LoginScreenPage", rightInset: 28 },
         { name: "Keybinds",    icon: "󰌌", page: "KeybindsPage", rightInset: 28 },
         { name: "Input",       icon: "󰍽", page: "InputPage", rightInset: 28 },
