@@ -34,7 +34,7 @@ hl.env("MOZ_ENABLE_WAYLAND", "1")
 
 hl.config({
     input = {
-        kb_layout = "tr",
+        kb_layout = "us", -- install.fish sets this from your system; change it in Settings -> Input
         follow_mouse = 1,
         sensitivity = -0.60,
         touchpad = {

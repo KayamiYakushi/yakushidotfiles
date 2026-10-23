@@ -4,7 +4,7 @@ set -eu
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 if ! command -v pacman >/dev/null 2>&1; then
-    echo "ERROR: Yakushi Dotfiles targets Arch Linux and Arch-based systems using pacman." >&2
+    echo "ERROR: These dotfiles target Arch Linux and Arch-based systems using pacman." >&2
     exit 1
 fi
 

@@ -24,4 +24,4 @@ install -d -m 0755 /etc/sddm.conf.d
 install -m 0644 "$repo_sddm_dir/99-yakushi-theme.conf" \
     /etc/sddm.conf.d/99-yakushi-theme.conf
 
-echo "Yakushi SDDM system files installed."
+echo "SDDM system files installed."

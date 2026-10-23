@@ -10,7 +10,7 @@ OUT = Path.home() / ".config/waybar/hardware.local.jsonc"
 
 CPU_DRIVERS = ("k10temp", "zenpower", "coretemp", "cpu_thermal")
 CPU_LABEL_PRIORITY = ("Tctl", "Package id 0", "Tdie", "CPU")
-GPU_DRIVERS = ("amdgpu",)
+GPU_DRIVERS = ("amdgpu", "radeon", "nouveau", "i915", "xe")
 GPU_LABEL_PRIORITY = ("edge", "junction", "mem")
 
 

@@ -139,7 +139,7 @@ Item {
     //
     // bluetoothctl successfully handled the MINI using:
     //
-    //     connect 41:42:98:02:9E:88
+    //     connect AA:BB:CC:DD:EE:FF
     //
     // BlueZ then reported:
     //

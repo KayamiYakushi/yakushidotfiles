@@ -1,11 +1,11 @@
-# 薬 Yakushi Dotfiles
+# 薬 Dotfiles
 
 My motto is: neither AUR or any non-official arch repos used, as optimized as possible, no background service runs unless its needed.
 
-A compact Hyprland desktop setup built around **Yakushi Settings**, a minimal glassy Waybar, a Raycast-style Rofi launcher, and practical desktop controls.
+A compact Hyprland desktop setup built around a custom **Settings** panel, a minimal glassy Waybar, a Raycast-style Rofi launcher, and practical desktop controls.
 
 <p align="center">
-  <img src="assets/preview.png" alt="Yakushi Dotfiles preview">
+  <img src="assets/preview.png" alt="Desktop preview">
 </p>
 
 ## Highlights
@@ -19,11 +19,13 @@ There is a simple waybar with these modules;
 
 -[Right] Volume, Date, Clock, Power button
 
+- Optional clock seconds: `SUPER + I` → Appearance → **Show seconds**
+
 - Area screenshot + clipboard — `SUPER + SHIFT + S`
 
 ## Preview
 
-The screenshot above shows the current Yakushi desktop layout and Yakushi Settings panel.
+The screenshot above shows the current desktop layout and the Settings panel.
 
 ## Installation
 
@@ -37,7 +39,7 @@ sh install.sh
 
 `install.sh` bootstraps Fish when needed, then `install.fish` installs the required packages from the official Arch repositories,
 creates a timestamped backup, installs the desktop configuration, configures the
-Yakushi SDDM theme, and enables the required services. No AUR helper is required.
+SDDM theme, and enables the required services. No AUR helper is required.
 
 The installer creates a timestamped backup under:
 
@@ -47,9 +49,13 @@ The installer creates a timestamped backup under:
 
 before replacing the managed configuration directories.
 
+The installer also detects your system keyboard layout (X11 layout, then console
+keymap, falling back to `us`) and writes it into `~/.config/hypr/hyprland.lua`.
+You can change it at any time in **Settings → Input**.
+
 ## Runtime tools
 
-Yakushi Dotfiles uses the following runtime tools. The installer installs them automatically from the official Arch repositories:
+These dotfiles use the following runtime tools. The installer installs them automatically from the official Arch repositories:
 
 - Hyprland
 - Quickshell
@@ -91,7 +97,7 @@ Change the browser command in your Hyprland configuration if you prefer a differ
 
 | Shortcut | Action |
 | --- | --- |
-| `SUPER + I` | Yakushi Settings |
+| `SUPER + I` | Settings |
 | `SUPER + SPACE` | App launcher |
 | `SUPER + Q` | Terminal |
 | `SUPER + E` | File manager |
@@ -140,7 +146,7 @@ The selected wallpaper is applied with `awww`.
 
 Machine-specific monitor state is intentionally **not tracked**.
 
-Yakushi Settings stores it locally in:
+Settings stores it locally in:
 
 ```text
 ~/.config/hypr/monitors.local.lua
@@ -151,7 +157,7 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 ## Runtime architecture
 
-- Yakushi Settings runs on demand and exits completely when closed.
+- Settings runs on demand and exits completely when closed.
 - The Volume OSD runs in a short-lived Quickshell process and exits after use.
 - Waybar uses native MPRIS through `playerctld`; legacy polling scripts are not used.
 - CPU and GPU temperatures are read natively by Waybar from sysfs/hwmon.
@@ -160,7 +166,7 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 ## Notes
 
-- Yakushi Settings always opens on the **System** page.
+- Settings always opens on the **System** page.
 - The System page includes a clickable persistent image slot; the selected image stays local and is not tracked by Git.
 
 - Desktop notifications are disabled by default; no notification daemon is autostarted.
@@ -173,7 +179,7 @@ The tracked `monitors.lua` stays generic so another user's machine does not inhe
 
 ## Credits
 
-Yakushi Dotfiles is based on and substantially modifies [43PR/dotfiles](https://github.com/43PR/dotfiles).
+These dotfiles are based on and substantially modify [43PR/dotfiles](https://github.com/43PR/dotfiles).
 
 The original project is distributed under the MIT License. Its copyright and license notice are preserved.
 

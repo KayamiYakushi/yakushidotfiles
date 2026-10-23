@@ -1,6 +1,4 @@
 import QtQuick
-import QtQuick.Dialogs
-import QtQuick.Controls as QQC
 import Quickshell.Io
 import "../"
 
@@ -144,15 +142,18 @@ Item {
         }
     }
 
-    ImagePickerWindow {
-        id: backgroundDialog
-        homeDir: page.homeDir
-        hostWindow: page.hostWindow
+    function chooseBackground() {
+        if (!hostWindow)
+            return
 
-        onAccepted: function(path) {
-            page.previewSource = "file://" + path
-            page.setBackground(path)
-        }
+        hostWindow.openImagePicker(
+            homeDir,
+            homeDir + "/Documents",
+            function(path) {
+                page.previewSource = "file://" + path.split("/").map(encodeURIComponent).join("/")
+                page.setBackground(path)
+            }
+        )
     }
 
     Column {
@@ -174,7 +175,7 @@ Item {
         }
 
         Text {
-            text: "SDDM · YAKUSHI"
+            text: "SDDM"
             color: Theme.textDim
             font.family: Theme.fontFamily
             font.pixelSize: 11
@@ -220,12 +221,11 @@ Item {
                 spacing: 6
 
                 Text {
-                    text: "薬  YAKUSHI"
-                    color: "#ffffff"
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 18
+                    text: "薬"
+                    color: "#ff003c"
+                    font.family: "Noto Sans CJK JP"
+                    font.pixelSize: 34
                     font.bold: true
-                    font.letterSpacing: 2
                 }
 
                 Text {
@@ -265,7 +265,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: backgroundDialog.openAt(page.homeDir + "/Documents")
+                    onClicked: page.chooseBackground()
                 }
             }
 

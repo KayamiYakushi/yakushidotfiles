@@ -4,7 +4,7 @@ set -l repo (cd (dirname (status --current-filename)); and pwd)
 set -l stamp (date +%Y-%m-%d_%H-%M-%S)
 set -l backup "$HOME/YakushiBackups/install-$stamp"
 
-echo "Yakushi Dotfiles v1.0.0 installer"
+echo "Dotfiles v1.0.0 installer"
 echo "Repository: $repo"
 echo "Backup: $backup"
 echo
@@ -125,6 +125,44 @@ if test -f "$qt_template"
         > "$HOME/.config/qt6ct/qt6ct.conf"
 end
 
+# Pick the keyboard layout from the system instead of assuming one.
+# Order: X11 layout (localectl) -> console keymap (/etc/vconsole.conf) -> "us".
+set -l xkb_rules /usr/share/X11/xkb/rules/evdev.lst
+set -l vconsole /etc/vconsole.conf
+set -l kb_layout ""
+
+if command -q localectl
+    set kb_layout (localectl status 2>/dev/null | string match -r -g 'X11 Layout:\s*(\S+)')
+end
+
+if test "$kb_layout" = "n/a"
+    set kb_layout ""
+end
+
+if test -z "$kb_layout"; and test -r "$vconsole"
+    set -l keymap (string match -r -g '^KEYMAP=(\S+)' < "$vconsole" | string trim -c '"\'')
+
+    if test -n "$keymap"
+        # "trq" -> "tr", "de-latin1" -> "de", "uk" -> "gb"
+        set -l short (string sub -l 2 -- "$keymap")
+        test "$short" = "uk"; and set short gb
+
+        for candidate in "$keymap" "$short"
+            if test -r "$xkb_rules"; and string match -rq "^\s+$candidate\s" < "$xkb_rules"
+                set kb_layout "$candidate"
+                break
+            end
+        end
+    end
+end
+
+if not string match -qr '^[a-z0-9_,]+$' -- "$kb_layout"
+    set kb_layout us
+end
+
+sed -i "s/kb_layout = \"[^\"]*\"/kb_layout = \"$kb_layout\"/" "$HOME/.config/hypr/hyprland.lua"
+echo "Keyboard layout: $kb_layout (change it any time in Settings -> Input)"
+
 # Never inherit the publisher's monitor topology.
 rm -f "$HOME/.config/hypr/monitors.local.lua"
 rm -f "$HOME/.config/hypr/yakushi-monitor-state.local.json"
@@ -141,7 +179,7 @@ or begin
 end
 
 echo
-echo "Installing Yakushi SDDM system files..."
+echo "Installing SDDM system files..."
 sudo sh "$repo/sddm/install-system.sh"
 or begin
     echo "ERROR: SDDM theme installation failed."
@@ -221,9 +259,10 @@ else
 end
 
 echo
-echo "Yakushi Dotfiles v1.0.0 installed successfully."
+echo "Dotfiles v1.0.0 installed successfully."
 echo "Backup: $backup"
-echo "Yakushi Settings: SUPER + I"
+echo "Settings: SUPER + I"
+echo "Keyboard layout: $kb_layout"
 echo "Wallpaper selector: SUPER + W"
 echo "Power menu: SUPER + GRAVE"
 echo

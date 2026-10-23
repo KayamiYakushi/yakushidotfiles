@@ -71,35 +71,25 @@ Rectangle {
             spacing: 15
 
             Row {
-                spacing: 10
+                spacing: 12
 
                 Text {
                     text: "薬"
+                    anchors.verticalCenter: parent.verticalCenter
                     color: "#ff003c"
                     font.family: "Noto Sans CJK JP"
                     font.pixelSize: 26
                     font.bold: true
                 }
 
-                Column {
-                    spacing: 1
-
-                    Text {
-                        text: "YAKUSHI"
-                        color: "#ffffff"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 17
-                        font.bold: true
-                        font.letterSpacing: 3
-                    }
-
-                    Text {
-                        text: "LOGIN"
-                        color: "#777777"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 9
-                        font.letterSpacing: 2
-                    }
+                Text {
+                    text: "LOGIN"
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: "#ffffff"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 17
+                    font.bold: true
+                    font.letterSpacing: 3
                 }
             }
 

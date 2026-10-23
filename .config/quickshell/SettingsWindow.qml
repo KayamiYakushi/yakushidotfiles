@@ -23,6 +23,10 @@ PanelWindow {
         item: (root.showing && !root.externalDialogOpen) ? backdrop : null
     }
 
+    ThemeState {
+        id: themeState
+    }
+
     property bool showing: false
     property int externalDialogDepth: 0
     property bool externalDialogOpen: externalDialogDepth > 0
@@ -44,8 +48,19 @@ PanelWindow {
         if (!showing)
             return
 
+        imagePicker.opened = false
+        themeState.flush()
         showing = false
         dismissed()
+    }
+
+    // Opens the in-panel image picker. `callback(path)` runs when an image
+    // is chosen. The picker lives inside the Settings card, so it shares the
+    // same surface, animation and keyboard focus as everything else here.
+    function openImagePicker(homeDir, startDir, callback) {
+        imagePicker.pendingCallback = callback
+        imagePicker.homeDir = homeDir
+        imagePicker.openAt(startDir)
     }
 
     function toggle() {
@@ -72,7 +87,12 @@ PanelWindow {
         color: "transparent"
 
         focus: root.showing
-        Keys.onEscapePressed: root.hide()
+        Keys.onEscapePressed: {
+            if (imagePicker.opened)
+                imagePicker.dismiss()
+            else
+                root.hide()
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -83,16 +103,20 @@ PanelWindow {
     // -------------------------
     // Nav model
     // -------------------------
+    // The page area runs to the card's right edge. `rightInset` pulls a page
+    // back inside the frame (28px = the card's inner padding). Pages that
+    // already keep their own right margin (Sound, Network, Bluetooth) and
+    // Appearance (which insets itself) use 0.
     property var navItems: [
-        { name: "System",     icon: "󰒓", page: "SystemPage" },
-        { name: "Appearance", icon: "󰏘", page: "AppearancePage" },
-        { name: "Login Screen", icon: "󰌾", page: "LoginScreenPage" },
-        { name: "Keybinds",    icon: "󰌌", page: "KeybindsPage" },
-        { name: "Input",       icon: "󰍽", page: "InputPage" },
-        { name: "Sound",      icon: "\uf028", page: "SoundPage" },
-        { name: "Monitors",   icon: "\uf108", page: "MonitorsPage" },
-        { name: "Network",    icon: "\uf1eb", page: "NetworkPage" },
-        { name: "Bluetooth",  icon: "󰂯", page: "BluetoothPage" }
+        { name: "System",     icon: "󰒓", page: "SystemPage", rightInset: 28 },
+        { name: "Appearance", icon: "󰏘", page: "AppearancePage", rightInset: 0 },
+        { name: "Login Screen", icon: "󰌾", page: "LoginScreenPage", rightInset: 28 },
+        { name: "Keybinds",    icon: "󰌌", page: "KeybindsPage", rightInset: 28 },
+        { name: "Input",       icon: "󰍽", page: "InputPage", rightInset: 28 },
+        { name: "Sound",      icon: "\uf028", page: "SoundPage", rightInset: 0 },
+        { name: "Monitors",   icon: "\uf108", page: "MonitorsPage", rightInset: 28 },
+        { name: "Network",    icon: "\uf1eb", page: "NetworkPage", rightInset: 0 },
+        { name: "Bluetooth",  icon: "󰂯", page: "BluetoothPage", rightInset: 0 }
     ]
 
     property int selectedIndex: 0
@@ -111,6 +135,15 @@ PanelWindow {
             // swallow clicks so they don't fall through to the backdrop
             anchors.fill: parent
             onClicked: {}
+        }
+
+        // Sakura accent: translucent petals inside the frame (static, no cost
+        // for any other accent).
+        SakuraPetals {
+            anchors.fill: parent
+            z: 10
+            active: Qt.colorEqual(Theme.accent, "#ff7a9d")
+            tint: Theme.accent
         }
 
         Rectangle {
@@ -159,31 +192,21 @@ PanelWindow {
 
                         Text {
                             text: "薬"
+                            anchors.verticalCenter: parent.verticalCenter
                             color: Theme.danger
                             font.family: "Noto Sans CJK JP"
                             font.pixelSize: 30
                             font.bold: true
                         }
 
-                        Column {
-                            spacing: 2
-
-                            Text {
-                                text: "YAKUSHI"
-                                color: Theme.text
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 18
-                                font.bold: true
-                                font.letterSpacing: 4
-                            }
-
-                            Text {
-                                text: "SYSTEM SETTINGS"
-                                color: Theme.textDim
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 9
-                                font.letterSpacing: 2
-                            }
+                        Text {
+                            text: "SETTINGS"
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: Theme.text
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 16
+                            font.bold: true
+                            font.letterSpacing: 4
                         }
                     }
 
@@ -274,6 +297,7 @@ PanelWindow {
                     Loader {
                         id: pageLoader
                         anchors.fill: parent
+                        anchors.rightMargin: root.navItems[root.selectedIndex].rightInset || 0
                         source: "SettingsPages/" + root.navItems[root.selectedIndex].page + ".qml"
 
                         onLoaded: {
@@ -309,6 +333,25 @@ PanelWindow {
                         }
                     }
                 }
+            }
+
+            // In-panel image picker (modal overlay above the whole card)
+            ImagePicker {
+                id: imagePicker
+
+                property var pendingCallback: null
+
+                anchors.fill: parent
+                z: 100
+
+                onAccepted: function(path) {
+                    if (pendingCallback)
+                        pendingCallback(path)
+
+                    pendingCallback = null
+                }
+
+                onClosed: backdrop.forceActiveFocus()
             }
         }
     }
