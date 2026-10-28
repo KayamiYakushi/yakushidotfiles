@@ -1,0 +1,138 @@
+/* Yakushi · app launcher (SUPER + Space)
+ *
+ * One dark card in the middle of the screen: the search line on top, up to
+ * six results under it. Apps, commands and open windows are searched
+ * together, by the start of the name.
+ *
+ * Settings -> Appearance -> App launcher opacity rewrites `bg` below, so
+ * keep it an 8-digit #rrggbbaa colour.
+ */
+
+configuration {
+    font:                   "JetBrainsMono Nerd Font 13";
+    show-icons:             true;
+
+    modes:                  "combi";
+    combi-modes:            "window,run,drun";
+    combi-hide-mode-prefix: true;
+    display-combi:          "󰘔";
+    display-drun:           "";
+    display-run:            "";
+    display-window:         "󰖯";
+    display-ssh:            "";
+
+    drun-display-format:    "{name}";
+    window-format:          "{t:45}  ·  {c}";
+
+    matching:               "prefix";
+    sorting-method:         "normal";
+    sort:                   true;
+
+    fixed-num-lines:        false;
+    scroll-method:          1;
+    location:               0;
+    click-to-exit:          true;
+}
+
+/* nothing from rofi's built-in theme: only the rules in this file apply */
+@theme "/dev/null"
+
+* {
+    /* palette */
+    bg:          #00000099;
+    pick:        #ffffff10;
+    accent:      #7aa2f7ff;
+    alarm:       #f7768eff;
+    ink:         #e6eaf2ff;
+    ink-soft:    #8b93a7ff;
+    ink-picked:  #6f6f6fff;
+
+    spacing:          0;
+    margin:           0;
+    padding:          0;
+    text-color:       @ink;
+    background-color: transparent;
+}
+
+window {
+    background-color: @bg;
+    border-radius:    18px;
+    width:            420px;
+    padding:          12px;
+    location:         center;
+}
+
+mainbox {
+    spacing:     12px;
+    orientation: vertical;
+}
+
+/* the search line: mode glyph + centred text */
+inputbar {
+    border-radius: 12px;
+    spacing:       12px;
+    padding:       6px 16px;
+    children:      [ prompt, entry ];
+}
+
+prompt {
+    vertical-align: 0.5;
+    text-color:     @accent;
+    font:           "JetBrainsMono Nerd Font 16";
+}
+
+textbox-prompt-colon {
+    str:    "";
+    expand: false;
+}
+
+entry {
+    vertical-align:    0.5;
+    horizontal-align:  0.5;
+    placeholder:       "";
+    placeholder-color: @ink-soft;
+    font:              "JetBrainsMono Nerd Font 14";
+}
+
+/* results */
+listview {
+    padding:      4px 0;
+    spacing:      6px;
+    lines:        6;
+    columns:      1;
+    scrollbar:    false;
+    fixed-height: false;
+}
+
+element {
+    border-radius: 10px;
+    spacing:       14px;
+    padding:       10px 14px;
+}
+
+element-icon {
+    vertical-align: 0.5;
+    size:           28px;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color:     inherit;
+    font:           "JetBrainsMono Nerd Font 11";
+}
+
+element normal.normal, element alternate.normal { text-color: @ink; }
+element normal.active, element alternate.active { text-color: @accent; }
+element normal.urgent, element alternate.urgent { text-color: @alarm; }
+element selected.normal, element selected.active { text-color: @ink-picked; background-color: @pick; }
+element selected.urgent { text-color: @ink-picked; background-color: @alarm; }
+
+/* -mesg text, for scripts that use it */
+message {
+    padding: 4px 8px;
+}
+
+textbox {
+    horizontal-align: 0.0;
+    text-color:       @ink-soft;
+}

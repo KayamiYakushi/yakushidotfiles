@@ -1,0 +1,43 @@
+# Machine-local Yakushi state
+.config/hypr/monitors.local.lua
+.config/hypr/yakushi-monitor-state.local.json
+.config/hypr/*.local.lua
+.config/hypr/*.local.json
+.config/quickshell/*.local.json
+.config/hypr/*.yakushi-last-good
+
+# Safety backups the Settings tools create next to the live configs
+*.yakushi-last-good
+*.yakushi-input-last-good
+*.yakushi-before-restore
+.yakushi-*-last-good.*
+* (copy *)*
+.config/hypr/Hyprland *
+
+# Per-user keybind on/off state written by Settings -> Keybinds
+.config/hypr/yakushi-disabled-binds.txt
+
+# Runtime / generated state
+**/__pycache__/
+*.pyc
+*.log
+*.bak
+*.tmp
+.validation/
+.cache/
+state/
+last-good/
+
+# Personal media
+.config/fastfetch/pfp3.png
+
+# Editor / OS
+.DS_Store
+*~
+
+# User-selected Yakushi Settings image
+.config/quickshell/assets/system-profile
+.config/waybar/hardware.local.jsonc
+__pycache__/
+*.syntax-broken-*
+*.before-*

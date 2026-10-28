@@ -1,0 +1,82 @@
+{
+    "include": ["~/.config/waybar/hardware.local.jsonc"],
+    "layer": "top",
+    "position": "top",
+    "exclusive": true,
+    "reload_style_on_change": true,
+    "height": 34,
+    "spacing": 0,
+    "modules-left": [
+        "hyprland/workspaces",
+        "custom/dot#a",
+        "memory",
+        "cpu",
+        "temperature#cpu",
+        "temperature#gpu"
+    ],
+    "modules-center": [
+        "mpris"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "custom/dot#b",
+        "clock#date",
+        "clock",
+        "custom/dot#c",
+        "custom/power"
+    ],
+    "hyprland/workspaces": {
+        "format": ""
+    },
+    "custom/dot#a": { "format": "•", "tooltip": false },
+    "custom/dot#b": { "format": "•", "tooltip": false },
+    "custom/dot#c": { "format": "•", "tooltip": false },
+    "memory": {
+        "interval": 5,
+        "format": "<span size='8pt' color='#8a8a8a' letter_spacing='1200'>RAM</span>  {used:0.1f} GB",
+        "tooltip": false
+    },
+    "cpu": {
+        "interval": 2,
+        "format": "<span size='8pt' color='#8a8a8a' letter_spacing='1200'>CPU</span>  {usage}%",
+        "tooltip": false
+    },
+    "clock#date": {
+        "interval": 60,
+        "format": "{:%a %d %b}",
+        "locale": "C",
+        "tooltip": false
+    },
+    "clock": {
+        "interval": 1,
+        "format": "{:%H:%M:%S}",
+        "tooltip": false
+    },
+    "mpris": {
+        "player": "playerctld",
+        "format": "<span color='#8a8a8a'>▶</span>  {dynamic}",
+        "format-paused": "<span color='#8a8a8a'>⏸</span>  {dynamic}",
+        "format-stopped": "",
+        "dynamic-order": ["title", "artist"],
+        "dynamic-importance-order": ["title", "artist"],
+        "dynamic-separator": " — ",
+        "dynamic-len": 40,
+        "title-len": 28,
+        "artist-len": 20,
+        "tooltip": false
+    },
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "󰖁  muted",
+        "format-icons": {
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "tooltip": false,
+        "on-click": "pavucontrol"
+    },
+    "custom/power": {
+        "format": "󰐥",
+        "tooltip": false,
+        "on-click": "$HOME/.config/rofi/scripts/yakushi-power-menu.sh"
+    }
+}

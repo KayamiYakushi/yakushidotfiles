@@ -1,0 +1,123 @@
+/* Yakushi Waybar: three dark capsules that match the island bar
+ * (same colour, font, dim labels and workspace dots). Plain on purpose:
+ * no hover effects or animations.
+ *
+ * The accent colour comes from accent.css (kept in step with Settings).
+ * Settings -> Top Bar -> Opacity edits the rgba() alpha of the three
+ * capsules below (left, the song, right).
+ */
+@import url("accent.css");
+
+* {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    min-height: 0;
+    font-size: 11px;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+}
+
+window#waybar {
+    background-color: transparent;
+    color: #e6e6e6;
+}
+
+/* ---------------- The three capsules ---------------- */
+.modules-left {
+    margin: 6px 0 0 8px;
+    padding: 0 8px 0 14px;
+    border-radius: 12px;
+    background-color: rgba(5, 5, 5, 0.9);
+}
+
+/* The centre capsule is the song itself, so nothing shows without a player. */
+#mpris {
+    margin: 6px 0 0;
+    padding: 0 16px;
+    border-radius: 12px;
+    background-color: rgba(5, 5, 5, 0.9);
+}
+
+.modules-right {
+    margin: 6px 8px 0 0;
+    padding: 0 12px 0 8px;
+    border-radius: 12px;
+    background-color: rgba(5, 5, 5, 0.9);
+}
+
+/* ---------------- Modules ---------------- */
+#cpu, #memory, #temperature, #pulseaudio, #clock, #custom-power {
+    color: #e6e6e6;
+    padding: 0 7px;
+}
+
+#temperature.cpu {
+    padding-left: 0;
+}
+
+#clock.date {
+    color: #8a8a8a;
+}
+
+#clock {
+    font-weight: bold;
+}
+
+#custom-power {
+    font-size: 13px;
+    color: #8a8a8a;
+    padding-right: 2px;
+}
+
+/* faint dot between groups, like the island */
+#custom-dot {
+    color: rgba(255, 255, 255, 0.22);
+    font-size: 8px;
+    padding: 0 6px;
+}
+
+#temperature.critical {
+    color: #ff5f6d;
+}
+
+/* ---------------- Workspaces: dots, the active one a wide accent pill ---------------- */
+#workspaces {
+    margin-right: 2px;
+}
+
+#workspaces button {
+    min-width: 6px;
+    min-height: 6px;
+    margin: 11px 3px;
+    padding: 0;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.40);
+}
+
+/* the (empty) label must not make the button taller */
+#workspaces button label {
+    font-size: 1px;
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+#workspaces button.empty {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+#workspaces button.active {
+    min-width: 18px;
+    background-color: @accent;
+}
+
+#workspaces button.urgent {
+    background-color: #ff5f6d;
+}
+
+tooltip {
+    background-color: rgba(5, 5, 5, 0.95);
+    border-radius: 8px;
+}

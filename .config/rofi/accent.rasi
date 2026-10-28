@@ -1,0 +1,5 @@
+/* Written by Yakushi Settings (accent colour). */
+* {
+    accent: #ffffffff;
+    accent-soft: #ffffff2e;
+}

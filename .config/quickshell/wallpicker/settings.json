@@ -1,0 +1,7 @@
+{
+    "images_dir": "~/.cache/quickshell/wallpaper-index/",
+    "thumbs_dir": "~/.cache/quickshell/thumbs/",
+    "visible_count": 10,
+    "frame_color": "#80FFFFFF",
+    "thumb_jobs": 20
+}

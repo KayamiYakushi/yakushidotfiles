@@ -1,0 +1,301 @@
+#!/usr/bin/env fish
+
+set -l repo (cd (dirname (status --current-filename)); and pwd)
+set -l stamp (date +%Y-%m-%d_%H-%M-%S)
+set -l backup "$HOME/YakushiBackups/install-$stamp"
+
+echo "Dotfiles v1.0.0 installer"
+echo "Repository: $repo"
+echo "Backup: $backup"
+echo
+
+if not command -q pacman
+    echo "ERROR: This installer targets Arch Linux and Arch-based systems using pacman."
+    exit 1
+end
+
+if not command -q sudo
+    echo "ERROR: sudo is required for package and system-file installation."
+    exit 1
+end
+
+# Official Arch repository dependencies only. No AUR helper is required.
+set -l packages \
+    fish \
+    hyprland \
+    quickshell \
+    waybar \
+    rofi \
+    python \
+    kitty \
+    nautilus \
+    firefox \
+    networkmanager \
+    wl-clipboard \
+    cliphist \
+    grim \
+    slurp \
+    brightnessctl \
+    hyprsunset \
+    hyprlock \
+    playerctl \
+    pavucontrol \
+    cava \
+    awww \
+    jq \
+    imagemagick \
+    qt6-imageformats \
+    qt6ct \
+    hyprpolkitagent \
+    hyprtoolkit \
+    xdg-desktop-portal-hyprland \
+    sddm \
+    bluez \
+    bluez-utils \
+    pipewire \
+    pipewire-pulse \
+    wireplumber \
+    noto-fonts \
+    noto-fonts-cjk \
+    ttf-jetbrains-mono-nerd \
+    pciutils \
+    xdg-utils
+
+echo "Installing required official-repository packages..."
+sudo -v
+or begin
+    echo "ERROR: sudo authentication failed."
+    exit 1
+end
+
+sudo pacman -Syu --needed --noconfirm $packages
+or begin
+    echo "ERROR: Dependency installation failed."
+    exit 1
+end
+
+mkdir -p "$backup" "$HOME/.config"
+
+set -l managed hypr quickshell waybar rofi hyprpolkitagent qt6ct
+
+for name in $managed
+    set -l src "$repo/.config/$name"
+    set -l dst "$HOME/.config/$name"
+
+    if not test -d "$src"
+        echo "ERROR: Missing repository directory: $src"
+        exit 1
+    end
+
+    if test -e "$dst"; or test -L "$dst"
+        echo "Backing up ~/.config/$name"
+        cp -a "$dst" "$backup/$name"
+    end
+end
+
+set -l systemd_src "$repo/.config/systemd/user/hyprpolkitagent.service.d"
+set -l systemd_dst "$HOME/.config/systemd/user/hyprpolkitagent.service.d"
+
+if not test -d "$systemd_src"
+    echo "ERROR: Missing systemd override: $systemd_src"
+    exit 1
+end
+
+if test -d "$systemd_dst"
+    mkdir -p "$backup/systemd-user"
+    cp -a "$systemd_dst" "$backup/systemd-user/"
+end
+
+echo
+echo "Installing managed configuration..."
+
+for name in $managed
+    set -l src "$repo/.config/$name"
+    set -l dst "$HOME/.config/$name"
+
+    rm -rf "$dst"
+    cp -a "$src" "$dst"
+end
+
+mkdir -p (dirname "$systemd_dst")
+rm -rf "$systemd_dst"
+cp -a "$systemd_src" "$systemd_dst"
+
+# Materialize the user-specific qt6ct config from the portable template.
+set -l qt_template "$HOME/.config/qt6ct/qt6ct.conf.template"
+if test -f "$qt_template"
+    string replace -a '@HOME@' "$HOME" < "$qt_template" \
+        > "$HOME/.config/qt6ct/qt6ct.conf"
+end
+
+# Pick the keyboard layout from the system instead of assuming one.
+# Order: X11 layout (localectl) -> console keymap (/etc/vconsole.conf) -> "us".
+set -l xkb_rules /usr/share/X11/xkb/rules/evdev.lst
+set -l vconsole /etc/vconsole.conf
+set -l kb_layout ""
+
+if command -q localectl
+    set kb_layout (localectl status 2>/dev/null | string match -r -g 'X11 Layout:\s*(\S+)')
+end
+
+if test "$kb_layout" = "n/a"
+    set kb_layout ""
+end
+
+if test -z "$kb_layout"; and test -r "$vconsole"
+    set -l keymap (string match -r -g '^KEYMAP=(\S+)' < "$vconsole" | string trim -c '"\'')
+
+    if test -n "$keymap"
+        # "trq" -> "tr", "de-latin1" -> "de", "uk" -> "gb"
+        set -l short (string sub -l 2 -- "$keymap")
+        test "$short" = "uk"; and set short gb
+
+        for candidate in "$keymap" "$short"
+            if test -r "$xkb_rules"; and string match -rq "^\s+$candidate\s" < "$xkb_rules"
+                set kb_layout "$candidate"
+                break
+            end
+        end
+    end
+end
+
+if not string match -qr '^[a-z0-9_,]+$' -- "$kb_layout"
+    set kb_layout us
+end
+
+sed -i "s/kb_layout = \"[^\"]*\"/kb_layout = \"$kb_layout\"/" "$HOME/.config/hypr/hyprland.lua"
+echo "Keyboard layout: $kb_layout (change it any time in Settings -> Input)"
+
+# Never inherit the publisher's monitor topology.
+rm -f "$HOME/.config/hypr/monitors.local.lua"
+rm -f "$HOME/.config/hypr/yakushi-monitor-state.local.json"
+
+mkdir -p "$HOME/Documents" "$HOME/Downloads" "$HOME/Pictures"
+mkdir -p "$HOME/.cache/quickshell/wallpaper-index"
+mkdir -p "$HOME/.cache/quickshell/thumbs"
+
+# Detect stable hwmon paths once; Waybar reads sysfs natively at runtime.
+python3 "$HOME/.config/waybar/scripts/generate-hardware-local.py"
+
+# Match the terminal (kitty, alacritty, foot, ghostty) and fish colours to the
+# theme; Settings -> Appearance -> Terminal turns this off and restores them.
+echo "Matching terminal colours to the theme..."
+python3 "$HOME/.config/quickshell/scripts/yakushi-termctl.py" enable >/dev/null 2>&1
+or echo "  (skipped: no supported terminal found)"
+python3 "$HOME/.config/quickshell/scripts/yakushi-themesync.py" >/dev/null 2>&1
+or true
+or begin
+    echo "ERROR: Hardware sensor configuration generation failed."
+    exit 1
+end
+
+echo
+echo "Installing SDDM system files..."
+sudo sh "$repo/sddm/install-system.sh"
+or begin
+    echo "ERROR: SDDM theme installation failed."
+    exit 1
+end
+
+echo
+echo "Enabling required services..."
+# Settings -> Network uses NetworkManager. If systemd-networkd already manages
+# the connection, do not start a second manager mid-install (it could drop
+# the network); enable NetworkManager for the next boot only and say so.
+set -l networkd_note ""
+if systemctl is-active --quiet systemd-networkd.service
+    sudo systemctl enable NetworkManager.service
+    set networkd_note "systemd-networkd is active: NetworkManager was enabled but not started. Disable one of them before rebooting (Settings -> Network needs NetworkManager)."
+else
+    sudo systemctl enable --now NetworkManager.service
+end
+sudo systemctl enable --now bluetooth.service
+
+# Enable SDDM for the next boot (never start it inside the current session).
+# If another display manager (GDM, LightDM, ly, ...) is in use, leave it alone.
+set -l sddm_note "SDDM is enabled for the next boot."
+set -l current_dm ""
+if test -L /etc/systemd/system/display-manager.service
+    set current_dm (readlink -f /etc/systemd/system/display-manager.service)
+end
+if test -z "$current_dm"; or string match -q "*/sddm.service" -- "$current_dm"
+    sudo systemctl enable sddm.service
+    or set sddm_note "Could not enable SDDM; your current login screen stays in use."
+else
+    set -l dm_name (basename "$current_dm")
+    set sddm_note "Another login screen ($dm_name) is enabled, so it was left in place. To use the Yakushi login screen: sudo systemctl disable $dm_name; sudo systemctl enable sddm.service"
+end
+
+systemctl --user daemon-reload
+systemctl --user enable --now hyprpolkitagent.service 2>/dev/null
+or systemctl --user restart hyprpolkitagent.service 2>/dev/null
+or true
+
+echo
+echo "Verifying runtime commands..."
+
+set -l required \
+    hyprctl \
+    qs \
+    waybar \
+    rofi \
+    python3 \
+    kitty \
+    nautilus \
+    firefox \
+    nmcli \
+    wl-copy \
+    cliphist \
+    grim \
+    slurp \
+    brightnessctl \
+    hyprsunset \
+    hyprlock \
+    playerctl \
+    pavucontrol \
+    awww \
+    jq \
+    magick \
+    bluetoothctl
+
+set -l missing
+
+for cmd in $required
+    if not command -q $cmd
+        set -a missing $cmd
+    end
+end
+
+if test (count $missing) -gt 0
+    echo "ERROR: Required commands are still missing:"
+    for cmd in $missing
+        echo "  - $cmd"
+    end
+    exit 1
+end
+
+if set -q HYPRLAND_INSTANCE_SIGNATURE
+    echo
+    echo "Reloading Hyprland..."
+    hyprctl reload 2>/dev/null; or true
+
+    echo "Restarting the top bar..."
+    sh "$HOME/.config/quickshell/scripts/yakushi-bar.sh" restart
+else
+    echo
+    echo "No active Hyprland session detected."
+    echo "The new configuration will load on the next Hyprland login."
+end
+
+echo
+echo "Dotfiles v1.0.0 installed successfully."
+echo "Backup: $backup"
+echo "Settings: SUPER + I"
+echo "Keyboard layout: $kb_layout"
+echo "Wallpaper selector: SUPER + W"
+echo "Power menu: SUPER + GRAVE"
+echo
+echo "$sddm_note"
+if test -n "$networkd_note"
+    echo "$networkd_note"
+end

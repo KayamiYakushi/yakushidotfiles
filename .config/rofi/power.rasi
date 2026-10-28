@@ -1,0 +1,84 @@
+/* Yakushi power menu as a rofi panel (used when the island bar is not
+ * running; the island has its own drop-down). Five tiles in one row.
+ * `accent` comes from accent.rasi, which Settings keeps in step. */
+
+configuration {
+    show-icons:      false;
+    hover-select:    true;
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
+}
+
+@theme "/dev/null"
+@import "accent.rasi"
+
+* {
+    panel:   #050505eb;
+    ink:     #e6e6e6;
+    ink-dim: #7a7a7a;
+    tile:    #ffffff0b;
+    rim:     #ffffff12;
+
+    font:             "JetBrainsMono Nerd Font 10";
+    text-color:       @ink;
+    background-color: transparent;
+}
+
+window {
+    location:         center;
+    width:            540px;
+    padding:          20px;
+    border:           1px;
+    border-color:     @rim;
+    border-radius:    24px;
+    background-color: @panel;
+}
+
+mainbox {
+    children: [ message, listview ];
+    spacing:  16px;
+}
+
+message {
+    padding: 0 6px;
+}
+
+textbox {
+    font:       "JetBrainsMono Nerd Font 9";
+    text-color: @ink-dim;
+}
+
+listview {
+    columns:       5;
+    lines:         1;
+    spacing:       10px;
+    fixed-columns: true;
+    fixed-height:  true;
+    dynamic:       false;
+    cycle:         true;
+    scrollbar:     false;
+}
+
+/* one tile: glyph on top, label below */
+element {
+    orientation:      vertical;
+    padding:          18px 0 14px;
+    border:           1px;
+    border-color:     @rim;
+    border-radius:    16px;
+    background-color: @tile;
+    cursor:           pointer;
+}
+
+element selected {
+    background-color: #ffffff12;
+    border-color:     @accent;
+    text-color:       @accent;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align:   0.5;
+    text-color:       inherit;
+    cursor:           inherit;
+}
