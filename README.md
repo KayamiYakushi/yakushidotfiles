@@ -17,6 +17,11 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
   A plain **Waybar** style in the same look is one click away.
 - **One accent everywhere** — bar, power menu, window borders, lock screen and terminal colours
   (kitty, alacritty, foot, ghostty, fish) follow the chosen accent.
+- **Light or dark apps** — one switch in Appearance turns GTK 3, GTK 4 / libadwaita apps
+  (Files, Firefox…) light or dark.
+- **Cursor picker** — Input lists every installed cursor theme with a preview, sets the size
+  and can grow the cursor when you shake the mouse. A plain red cursor (Yakushi Red) comes
+  with it.
 - **Default apps** — scans what is installed and sets the terminal, shell, file manager,
   browser, editor and viewers.
 - **Wallpaper picker** (`SUPER + W`) — every image under `~/Documents`, applied with `awww`.

@@ -20,6 +20,7 @@ local startup = {
     "hyprsunset",
     "sleep 1.5 && python3 ~/.config/hypr/scripts/yakushi-nightlightctl.py restore",
     "awww-daemon",
+    "python3 ~/.config/quickshell/scripts/yakushi-shake.py --login",   -- shake to find, if on
 }
 
 hl.on("hyprland.start", function()
@@ -30,12 +31,16 @@ end)
 
 -- Environment ------------------------------------------------------------------
 for name, value in pairs({
-    XCURSOR_SIZE = "14",
+    XCURSOR_SIZE = "24",
     QT_QPA_PLATFORM = "wayland",
     MOZ_ENABLE_WAYLAND = "1",
 }) do
     hl.env(name, value)
 end
+
+-- the mouse cursor picked in Settings -> Input (overrides XCURSOR_SIZE above
+-- only if you change it there)
+pcall(dofile, os.getenv("HOME") .. "/.config/hypr/cursor.local.lua")
 
 -- Everything else, in one table --------------------------------------------------
 hl.config({
@@ -68,6 +73,9 @@ hl.config({
     },
 
     render = { expand_undersized_textures = false },
+    -- Settings -> Input -> Cursor writes GSettings itself; this keeps the
+    -- quick size swaps of shake to find out of GSettings
+    cursor = { sync_gsettings_theme = false },
     animations = { enabled = true },
     dwindle = { preserve_split = true },
     master = { new_status = "master" },

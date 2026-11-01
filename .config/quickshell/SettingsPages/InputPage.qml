@@ -65,10 +65,97 @@ Item {
         id: layoutsModel
     }
 
+    // ---- mouse cursor themes (scripts/yakushi-cursorctl.py)
+    readonly property string cursorHelper: homeDir + "/.config/quickshell/scripts/yakushi-cursorctl.py"
+    property var cursorThemes: []
+    property string cursorTheme: ""
+    property string cursorNote: ""
+    property int cursorSize: 24
+    property bool cursorShake: false
+    property real cursorHold: 0.35          // seconds it stays big after the shaking stops
+    readonly property real holdMin: 0.1
+    readonly property real holdMax: 3.0
+
+    // slider position <-> seconds; squared so short times get more room
+    function holdToSlider(sec) {
+        return Math.sqrt(Math.max(0, (sec - holdMin) / (holdMax - holdMin)))
+    }
+
+    function sliderToHold(v) {
+        return Math.round((holdMin + (holdMax - holdMin) * v * v) * 10) / 10
+    }
+
+    function setCursorHold(sec) {
+        cursorHold = sec
+        holdSave.restart()
+    }
+
+    // save once the slider rests (a busy helper just means: try again shortly)
+    Timer {
+        id: holdSave
+
+        interval: 250
+        onTriggered: {
+            if (!page.cursorCall(["hold", page.cursorHold.toFixed(1)]))
+                restart()
+        }
+    }
+    readonly property var cursorSizes: [16, 20, 24, 32, 40, 48, 64]
+
+    function cursorCall(args) {
+        if (cursorJob.running)
+            return false
+        cursorJob.command = ["python3", cursorHelper].concat(args)
+        cursorJob.running = true
+        return true
+    }
+
+    function setCursorTheme(id) {
+        if (id !== cursorTheme && cursorCall(["set", id]))
+            cursorTheme = id
+    }
+
+    function setCursorSize(px) {
+        if (px !== cursorSize && cursorCall(["size", String(px)]))
+            cursorSize = px
+    }
+
+    function setCursorShake(on) {
+        if (cursorCall(["shake", on ? "on" : "off"]))
+            cursorShake = on
+    }
+
+    Process {
+        id: cursorJob
+
+        command: ["python3", page.cursorHelper, "list"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var d = JSON.parse(text)
+                    if (d.themes)
+                        page.cursorThemes = d.themes
+                    if (d.current)
+                        page.cursorTheme = d.current
+                    if (d.size)
+                        page.cursorSize = d.size
+                    if (d.shake !== undefined)
+                        page.cursorShake = d.shake
+                    if (d.hold !== undefined && !holdSave.running)
+                        page.cursorHold = d.hold
+                    page.cursorNote = d.message || ""
+                } catch (e) {
+                    page.cursorNote = "Could not read the cursor themes."
+                }
+            }
+        }
+    }
+
     // first load
     Component.onCompleted: {
         page.refreshState()
         page.refreshLayouts()
+        cursorJob.running = true
     }
 
     Process {
@@ -334,7 +421,8 @@ Item {
         anchors.topMargin: 8
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 236
+        anchors.bottom: pointerDivider.top
+        anchors.bottomMargin: 14
         clip: true
         // Rows carry their own gap: hidden (filtered-out) rows must take no
         // space at all, and ListView spacing would still add up between them.
@@ -434,8 +522,8 @@ Item {
 
     Rectangle {
         id: pointerDivider
-        anchors.top: layoutList.bottom
-        anchors.topMargin: 14
+        anchors.bottom: pointerTitle.top
+        anchors.bottomMargin: 14
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
@@ -444,8 +532,8 @@ Item {
 
     Text {
         id: pointerTitle
-        anchors.top: pointerDivider.bottom
-        anchors.topMargin: 14
+        anchors.bottom: pointerSlider.top
+        anchors.bottomMargin: 8
         anchors.left: parent.left
         text: "POINTER"
         color: Theme.inkSoft
@@ -456,8 +544,8 @@ Item {
 
     Slider {
         id: pointerSlider
-        anchors.top: pointerTitle.bottom
-        anchors.topMargin: 8
+        anchors.bottom: pointerScale.top
+        anchors.bottomMargin: 2
         anchors.left: parent.left
         anchors.right: parent.right
 
@@ -491,8 +579,9 @@ Item {
     }
 
     Row {
-        anchors.top: pointerSlider.bottom
-        anchors.topMargin: 2
+        id: pointerScale
+        anchors.bottom: cursorDivider.top
+        anchors.bottomMargin: 14
         anchors.left: parent.left
         anchors.right: parent.right
 
@@ -513,6 +602,304 @@ Item {
             color: Theme.inkMute
             font.family: Theme.mono
             font.pixelSize: 8
+        }
+    }
+
+    // ---------------- Cursor ----------------
+    Rectangle {
+        id: cursorDivider
+        anchors.bottom: cursorTitle.top
+        anchors.bottomMargin: 14
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 1
+        color: Theme.line
+    }
+
+    Text {
+        id: cursorTitle
+        anchors.bottom: cursorStrip.top
+        anchors.bottomMargin: 8
+        anchors.left: parent.left
+        text: "CURSOR"
+        color: Theme.inkSoft
+        font.family: Theme.mono
+        font.pixelSize: 10
+        font.letterSpacing: 2
+    }
+
+    Text {
+        anchors.right: parent.right
+        anchors.baseline: cursorTitle.baseline
+        anchors.left: cursorTitle.right
+        anchors.leftMargin: 16
+        horizontalAlignment: Text.AlignRight
+        elide: Text.ElideLeft
+        text: page.cursorNote !== "" ? page.cursorNote
+            : page.cursorThemes.length + " installed  ·  click one to use it"
+        color: Theme.inkMute
+        font.family: Theme.mono
+        font.pixelSize: 9
+    }
+
+    ListView {
+        id: cursorStrip
+
+        anchors.bottom: cursorControls.top
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 84
+        orientation: ListView.Horizontal
+        spacing: 8
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        model: page.cursorThemes
+
+        delegate: Rectangle {
+            id: cursorTile
+
+            required property var modelData
+            readonly property bool current: page.cursorTheme === modelData.id
+
+            width: 112
+            height: 84
+            radius: Theme.rounded ? 10 : 0
+            color: current ? Theme.tint(Theme.accent, 0.13)
+                : tileMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
+            border.width: 1
+            border.color: current ? Theme.accent
+                : tileMouse.containsMouse ? Theme.lineHot : Theme.line
+
+            Behavior on color {
+                ColorAnimation { duration: Theme.tFast }
+            }
+
+            // the theme's arrow on a mid-grey patch, so dark and light cursors both show
+            Rectangle {
+                id: patch
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 10
+                width: 44
+                height: 44
+                radius: Theme.rounded ? 8 : 0
+                color: "#5a5f6a"
+
+                Image {
+                    anchors.centerIn: parent
+                    width: 32
+                    height: 32
+                    source: cursorTile.modelData.preview ? "file://" + cursorTile.modelData.preview : ""
+                    sourceSize.width: 32
+                    sourceSize.height: 32
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    cache: false
+                    asynchronous: true
+                }
+
+                Text {
+                    visible: !cursorTile.modelData.preview
+                    anchors.centerIn: parent
+                    text: String.fromCodePoint(0xF01BF)
+                    color: Theme.ink
+                    font.family: Theme.glyphs
+                    font.pixelSize: 20
+                }
+            }
+
+            Text {
+                anchors.top: patch.bottom
+                anchors.topMargin: 8
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width - 14
+                horizontalAlignment: Text.AlignHCenter
+                text: cursorTile.modelData.name
+                elide: Text.ElideRight
+                color: cursorTile.current ? Theme.accent : Theme.ink
+                font.family: Theme.mono
+                font.pixelSize: 9
+            }
+
+            // marks the one that comes with Yakushi
+            Text {
+                visible: cursorTile.modelData.yakushi === true
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: 5
+                text: "薬"
+                color: Theme.accent
+                font.family: "Noto Sans CJK JP"
+                font.pixelSize: 10
+            }
+
+            MouseArea {
+                id: tileMouse
+
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: page.setCursorTheme(cursorTile.modelData.id)
+            }
+        }
+    }
+
+    // size chips on the left, shake to find on the right
+    Column {
+        id: cursorControls
+
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: 6
+
+        Item {
+            width: parent.width
+            height: 26
+
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    rightPadding: 4
+                    text: "SIZE"
+                    color: Theme.inkSoft
+                    font.family: Theme.mono
+                    font.pixelSize: 9
+                    font.letterSpacing: 2
+                }
+
+                Repeater {
+                    model: page.cursorSizes
+
+                    delegate: Rectangle {
+                        id: sizeChip
+
+                        required property int modelData
+                        readonly property bool current: page.cursorSize === modelData
+
+                        width: 34
+                        height: 24
+                        radius: Theme.rounded ? 12 : 0
+                        color: current ? Theme.tint(Theme.accent, 0.16)
+                            : sizeMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : Theme.card
+                        border.width: 1
+                        border.color: current ? Theme.accent
+                            : sizeMouse.containsMouse ? Theme.lineHot : Theme.line
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: sizeChip.modelData
+                            color: sizeChip.current ? Theme.ink : Theme.inkSoft
+                            font.family: Theme.mono
+                            font.pixelSize: 10
+                        }
+
+                        MouseArea {
+                            id: sizeMouse
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: page.setCursorSize(sizeChip.modelData)
+                        }
+                    }
+                }
+            }
+
+            Row {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 12
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "SHAKE TO FIND"
+                    color: Theme.inkSoft
+                    font.family: Theme.mono
+                    font.pixelSize: 9
+                    font.letterSpacing: 2
+                }
+
+                Switch {
+                    anchors.verticalCenter: parent.verticalCenter
+                    checked: page.cursorShake
+                    available: !cursorJob.running
+                    onToggled: page.setCursorShake(!page.cursorShake)
+                }
+            }
+        }
+
+        // how long the big cursor stays after the shaking stops
+        Item {
+            visible: page.cursorShake
+            width: parent.width
+            height: visible ? 22 : 0
+
+            Text {
+                id: holdLabel
+
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 96
+                text: "STAYS BIG"
+                color: Theme.inkSoft
+                font.family: Theme.mono
+                font.pixelSize: 9
+                font.letterSpacing: 2
+            }
+
+            Text {
+                id: holdShort
+
+                anchors.left: holdLabel.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: "SHORT"
+                color: Theme.inkMute
+                font.family: Theme.mono
+                font.pixelSize: 8
+                font.letterSpacing: 1
+            }
+
+            LineSlider {
+                anchors.left: holdShort.right
+                anchors.leftMargin: 12
+                anchors.right: holdLong.left
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                value: page.holdToSlider(page.cursorHold)
+                onSliding: function(v) { page.setCursorHold(page.sliderToHold(v)) }
+                onSettled: function(v) { page.setCursorHold(page.sliderToHold(v)) }
+            }
+
+            Text {
+                id: holdLong
+
+                anchors.right: holdValue.left
+                anchors.rightMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+                text: "LONG"
+                color: Theme.inkMute
+                font.family: Theme.mono
+                font.pixelSize: 8
+                font.letterSpacing: 1
+            }
+
+            Text {
+                id: holdValue
+
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: 44
+                horizontalAlignment: Text.AlignRight
+                text: page.cursorHold.toFixed(1) + " s"
+                color: Theme.ink
+                font.family: Theme.mono
+                font.pixelSize: 10
+            }
         }
     }
 }

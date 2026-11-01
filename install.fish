@@ -49,6 +49,9 @@ set -l packages \
     hyprpolkitagent \
     hyprtoolkit \
     xdg-desktop-portal-hyprland \
+    xdg-desktop-portal-gtk \
+    dconf \
+    gsettings-desktop-schemas \
     sddm \
     bluez \
     bluez-utils \
@@ -116,6 +119,11 @@ for name in $managed
     rm -rf "$dst"
     cp -a "$src" "$dst"
 end
+
+# The red mouse cursor that comes with Yakushi (Settings -> Input -> Cursor).
+mkdir -p "$HOME/.local/share/icons"
+rm -rf "$HOME/.local/share/icons/Yakushi-Red"
+cp -a "$repo/.local/share/icons/Yakushi-Red" "$HOME/.local/share/icons/"
 
 mkdir -p (dirname "$systemd_dst")
 rm -rf "$systemd_dst"

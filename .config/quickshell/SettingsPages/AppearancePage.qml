@@ -54,8 +54,39 @@ Item {
         launcherSet.running = true
     }
 
+    // ---- apps light / dark (scripts/yakushi-schemectl.py)
+    property string scheme: ""          // "dark" | "light", "" until known
+    property string schemeNote: ""
+
+    function setScheme(value) {
+        if (schemeJob.running || value === scheme)
+            return
+        scheme = value                  // the cards answer at once
+        schemeJob.command = ["python3", homeDir + "/.config/quickshell/scripts/yakushi-schemectl.py", "set", value]
+        schemeJob.running = true
+    }
+
+    Process {
+        id: schemeJob
+
+        command: ["python3", page.homeDir + "/.config/quickshell/scripts/yakushi-schemectl.py", "get"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var d = JSON.parse(text)
+                    page.scheme = d.scheme
+                    page.schemeNote = d.message
+                        || (d.portal === false ? "Install xdg-desktop-portal-gtk so Files and other GTK4 apps follow too." : "")
+                } catch (e) {
+                    page.schemeNote = "Could not read the app theme."
+                }
+            }
+        }
+    }
+
     // first load
     Component.onCompleted: {
+        schemeJob.running = true
         page.loadLauncherOpacity()
         page.loadWindow()
         termGet.command = ["python3", page.termHelperPath(), "status"]
@@ -563,6 +594,156 @@ Item {
                         }
                     }
                 }
+            }
+
+            Divider {}
+
+            // ---------------- Apps: light / dark ----------------
+            Row {
+                spacing: 10
+
+                SectionLabel { text: "APPS" }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "GTK 3 · GTK 4 · Files · Firefox"
+                    color: Theme.inkMute
+                    font.family: Theme.mono
+                    font.pixelSize: 9
+                    font.letterSpacing: 1
+                }
+            }
+
+            Row {
+                id: schemeRow
+
+                width: parent.width
+                spacing: 10
+
+                Repeater {
+                    model: [
+                        { key: "dark", label: "DARK", jp: "暗", hint: "Dark windows everywhere",
+                          paper: "#161616", bar: "#262626", ink: "#e6e6e6" },
+                        { key: "light", label: "LIGHT", jp: "明", hint: "Light windows everywhere",
+                          paper: "#f4f4f4", bar: "#dcdcdc", ink: "#2a2a2a" }
+                    ]
+
+                    delegate: Rectangle {
+                        id: schemeCard
+
+                        required property var modelData
+                        readonly property bool selected: page.scheme === modelData.key
+
+                        width: (schemeRow.width - schemeRow.spacing) / 2
+                        height: 64
+                        radius: Theme.corner
+                        color: selected ? Theme.tint(Theme.accent, 0.10) : Theme.card
+                        border.width: 1
+                        border.color: selected
+                            ? Theme.accent
+                            : (schemeMouse.containsMouse ? Theme.lineHot : Theme.line)
+
+                        Behavior on color {
+                            ColorAnimation { duration: Theme.tFast }
+                        }
+
+                        // a tiny app window in that scheme
+                        Rectangle {
+                            id: miniWindow
+
+                            anchors.left: parent.left
+                            anchors.leftMargin: 14
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 54
+                            height: 38
+                            radius: Theme.rounded ? 8 : 0
+                            color: schemeCard.modelData.paper
+                            border.width: 1
+                            border.color: schemeCard.selected ? Theme.accent : Theme.inkMute
+                            clip: true
+
+                            Rectangle {
+                                width: parent.width
+                                height: 9
+                                color: schemeCard.modelData.bar
+                            }
+
+                            Repeater {
+                                model: 3
+
+                                Rectangle {
+                                    required property int index
+
+                                    x: 7
+                                    y: 14 + index * 7
+                                    width: index === 1 ? 26 : 36
+                                    height: 3
+                                    radius: Theme.rounded ? 1.5 : 0
+                                    color: index === 0 && schemeCard.selected ? Theme.accent : schemeCard.modelData.ink
+                                    opacity: index === 0 ? 1 : 0.55
+                                }
+                            }
+                        }
+
+                        Column {
+                            anchors.left: miniWindow.right
+                            anchors.leftMargin: 14
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 4
+
+                            Row {
+                                spacing: 8
+
+                                Text {
+                                    text: schemeCard.modelData.label
+                                    color: schemeCard.selected ? Theme.accent : Theme.ink
+                                    font.family: Theme.mono
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    font.letterSpacing: 2
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: schemeCard.modelData.jp
+                                    color: Theme.inkSoft
+                                    font.family: "Noto Sans CJK JP"
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            Text {
+                                width: parent.width
+                                text: schemeCard.modelData.hint
+                                color: Theme.inkSoft
+                                font.family: Theme.mono
+                                font.pixelSize: 10
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            id: schemeMouse
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: page.setScheme(schemeCard.modelData.key)
+                        }
+                    }
+                }
+            }
+
+            Text {
+                visible: page.schemeNote !== ""
+                width: parent.width
+                text: page.schemeNote
+                wrapMode: Text.WordWrap
+                color: Theme.inkMute
+                font.family: Theme.mono
+                font.pixelSize: 9
             }
 
             Divider {}
