@@ -21,8 +21,7 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
   (Files, Firefox…) light or dark.
 - **Cursor picker** — Input lists every installed cursor theme with a preview, sets the size
   and can grow the cursor when you shake the mouse. Our own cursor, Yakushi Red, comes
-  with it, white edged or black edged (Yakushi Red Dark), and **+ RED COPY** makes a red
-  version of any installed theme (e.g. Breeze) on your own computer.
+  with it, white edged or black edged (Yakushi Red Dark).
 - **Default apps** — scans what is installed and sets the terminal, shell, file manager,
   browser, editor and viewers.
 - **Wallpaper picker** (`SUPER + W`) — every image under `~/Documents`, applied with `awww`.

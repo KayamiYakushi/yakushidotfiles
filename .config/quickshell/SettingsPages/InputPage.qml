@@ -120,15 +120,6 @@ Item {
             cursorSize = px
     }
 
-    // red copy of the theme in use, made on this computer (yakushi-cursor-tint.py)
-    readonly property bool canRedCopy: cursorTheme !== "" && !cursorTheme.startsWith("Yakushi-Red")
-                                       && !/-red$/i.test(cursorTheme)
-
-    function makeRedCopy() {
-        if (canRedCopy && cursorCall(["redcopy", cursorTheme]))
-            cursorNote = "Making a red copy…"
-    }
-
     function setCursorShake(on) {
         if (cursorCall(["shake", on ? "on" : "off"]))
             cursorShake = on
@@ -637,46 +628,8 @@ Item {
         font.letterSpacing: 2
     }
 
-    // "+ RED COPY": a red version of the selected theme
-    Rectangle {
-        id: redCopy
-
-        visible: page.canRedCopy
-        anchors.right: parent.right
-        anchors.verticalCenter: cursorTitle.verticalCenter
-        width: visible ? redCopyText.implicitWidth + 18 : 0
-        height: 20
-        radius: Theme.rounded ? 10 : 0
-        color: redMouse.containsMouse ? Theme.tint("#e2202f", 0.22) : Theme.tint("#e2202f", 0.12)
-        border.width: 1
-        border.color: Theme.tint("#e2202f", 0.7)
-        opacity: cursorJob.running ? 0.5 : 1
-
-        Text {
-            id: redCopyText
-
-            anchors.centerIn: parent
-            text: "+ RED COPY"
-            color: Theme.ink
-            font.family: Theme.mono
-            font.pixelSize: 8
-            font.letterSpacing: 1
-        }
-
-        MouseArea {
-            id: redMouse
-
-            anchors.fill: parent
-            hoverEnabled: true
-            enabled: !cursorJob.running
-            cursorShape: Qt.PointingHandCursor
-            onClicked: page.makeRedCopy()
-        }
-    }
-
     Text {
-        anchors.right: redCopy.left
-        anchors.rightMargin: redCopy.visible ? 12 : 0
+        anchors.right: parent.right
         anchors.baseline: cursorTitle.baseline
         anchors.left: cursorTitle.right
         anchors.leftMargin: 16
@@ -689,105 +642,137 @@ Item {
         font.pixelSize: 9
     }
 
-    ListView {
+    // one row of tiles; a Row (not a ListView) so the scroll range is exact
+    // and the last tile always fits in whole
+    Flickable {
         id: cursorStrip
+
+        readonly property real maxX: Math.max(0, contentWidth - width)
+
+        function scrollTo(x) {
+            contentX = Math.round(Math.min(maxX, Math.max(0, x)))
+        }
 
         anchors.bottom: cursorControls.top
         anchors.bottomMargin: 10
         anchors.left: parent.left
         anchors.right: parent.right
         height: 84
-        orientation: ListView.Horizontal
-        spacing: 8
-        clip: true
+        contentWidth: cursorRow.width
+        contentHeight: height
+        flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
-        model: page.cursorThemes
+        interactive: contentWidth > width
+        clip: true
 
-        delegate: Rectangle {
-            id: cursorTile
+        // new list or narrower window: stay inside the range
+        onMaxXChanged: if (contentX > maxX) scrollTo(contentX)
+        // the wheel (up/down or sideways) moves the row, a tile per notch
+        WheelHandler {
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: event => cursorStrip.scrollTo(cursorStrip.contentX - event.angleDelta.y)
+        }
+        WheelHandler {
+            orientation: Qt.Horizontal
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: event => cursorStrip.scrollTo(cursorStrip.contentX - event.angleDelta.x)
+        }
 
-            required property var modelData
-            readonly property bool current: page.cursorTheme === modelData.id
+        Row {
+            id: cursorRow
 
-            width: 112
-            height: 84
-            radius: Theme.rounded ? 10 : 0
-            color: current ? Theme.tint(Theme.accent, 0.13)
-                : tileMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
-            border.width: 1
-            border.color: current ? Theme.accent
-                : tileMouse.containsMouse ? Theme.lineHot : Theme.line
+            spacing: 8
 
-            Behavior on color {
-                ColorAnimation { duration: Theme.tFast }
-            }
+            Repeater {
+                model: page.cursorThemes
 
-            // the theme's arrow on a mid-grey patch, so dark and light cursors both show
-            Rectangle {
-                id: patch
+                delegate: Rectangle {
+                    id: cursorTile
 
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: 10
-                width: 44
-                height: 44
-                radius: Theme.rounded ? 8 : 0
-                color: "#5a5f6a"
+                    required property var modelData
+                    readonly property bool current: page.cursorTheme === modelData.id
 
-                Image {
-                    anchors.centerIn: parent
-                    width: 32
-                    height: 32
-                    source: cursorTile.modelData.preview ? "file://" + cursorTile.modelData.preview : ""
-                    sourceSize.width: 32
-                    sourceSize.height: 32
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    cache: false
-                    asynchronous: true
+                    width: 112
+                    height: 84
+                    radius: Theme.rounded ? 10 : 0
+                    color: current ? Theme.tint(Theme.accent, 0.13)
+                        : tileMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
+                    border.width: 1
+                    border.color: current ? Theme.accent
+                        : tileMouse.containsMouse ? Theme.lineHot : Theme.line
+
+                    Behavior on color {
+                        ColorAnimation { duration: Theme.tFast }
+                    }
+
+                    // the theme's arrow on a mid-grey patch, so dark and light cursors both show
+                    Rectangle {
+                        id: patch
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: 10
+                        width: 44
+                        height: 44
+                        radius: Theme.rounded ? 8 : 0
+                        color: "#5a5f6a"
+
+                        Image {
+                            anchors.centerIn: parent
+                            width: 32
+                            height: 32
+                            source: cursorTile.modelData.preview ? "file://" + cursorTile.modelData.preview : ""
+                            sourceSize.width: 32
+                            sourceSize.height: 32
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            cache: false
+                            asynchronous: true
+                        }
+
+                        Text {
+                            visible: !cursorTile.modelData.preview
+                            anchors.centerIn: parent
+                            text: String.fromCodePoint(0xF01BF)
+                            color: Theme.ink
+                            font.family: Theme.glyphs
+                            font.pixelSize: 20
+                        }
+                    }
+
+                    Text {
+                        anchors.top: patch.bottom
+                        anchors.topMargin: 8
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width - 14
+                        horizontalAlignment: Text.AlignHCenter
+                        text: cursorTile.modelData.name
+                        elide: Text.ElideRight
+                        color: cursorTile.current ? Theme.accent : Theme.ink
+                        font.family: Theme.mono
+                        font.pixelSize: 9
+                    }
+
+                    // marks the one that comes with Yakushi
+                    Text {
+                        visible: cursorTile.modelData.yakushi === true
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 5
+                        text: "薬"
+                        color: Theme.accent
+                        font.family: "Noto Sans CJK JP"
+                        font.pixelSize: 10
+                    }
+
+                    MouseArea {
+                        id: tileMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: page.setCursorTheme(cursorTile.modelData.id)
+                    }
                 }
-
-                Text {
-                    visible: !cursorTile.modelData.preview
-                    anchors.centerIn: parent
-                    text: String.fromCodePoint(0xF01BF)
-                    color: Theme.ink
-                    font.family: Theme.glyphs
-                    font.pixelSize: 20
-                }
-            }
-
-            Text {
-                anchors.top: patch.bottom
-                anchors.topMargin: 8
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width - 14
-                horizontalAlignment: Text.AlignHCenter
-                text: cursorTile.modelData.name
-                elide: Text.ElideRight
-                color: cursorTile.current ? Theme.accent : Theme.ink
-                font.family: Theme.mono
-                font.pixelSize: 9
-            }
-
-            // marks the one that comes with Yakushi
-            Text {
-                visible: cursorTile.modelData.yakushi === true
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.margins: 5
-                text: "薬"
-                color: Theme.accent
-                font.family: "Noto Sans CJK JP"
-                font.pixelSize: 10
-            }
-
-            MouseArea {
-                id: tileMouse
-
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: page.setCursorTheme(cursorTile.modelData.id)
             }
         }
     }

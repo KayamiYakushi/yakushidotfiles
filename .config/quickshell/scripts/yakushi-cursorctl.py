@@ -9,9 +9,6 @@
                                      (yakushi-shake.py, KDE style)
     yakushi-cursorctl.py hold <s>    how long it stays big after the shaking
                                      stops (0.1 .. 3 seconds)
-    yakushi-cursorctl.py redcopy <id>
-                                     a red copy of theme <id>, made here by
-                                     yakushi-cursor-tint.py, and use it
 
 A theme is any folder in an icon directory with a `cursors/` folder
 (XCursor) or a `manifest.hl` (hyprcursor). `list` also saves a small PNG of
@@ -30,7 +27,6 @@ Runs only when called.
 from __future__ import annotations
 
 import configparser
-import importlib.util
 import io
 import json
 import os
@@ -493,17 +489,6 @@ def main() -> None:
         print(json.dumps(apply(theme)))
     elif len(a) == 2 and a[0] == "size" and a[1].isdigit() and 8 <= int(a[1]) <= 128:
         print(json.dumps(resize(int(a[1]))))
-    elif len(a) == 2 and a[0] == "redcopy":
-        spec = importlib.util.spec_from_file_location("tint", Path(__file__).resolve().parent / "yakushi-cursor-tint.py")
-        tint = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(tint)
-        made = tint.make_copy(a[1])
-        theme = theme_by_id(made["id"]) if made.get("ok") else None
-        if theme is None:
-            print(json.dumps(listing(message=made.get("message", "Could not make the copy."))))
-            raise SystemExit(1)
-        res = apply(theme)
-        print(json.dumps(listing(message=made["message"] + " " + res["message"])))
     elif len(a) == 2 and a[0] == "hold" and re.fullmatch(r"\d+(\.\d+)?", a[1]):
         stay = min(HOLD_MAX, max(HOLD_MIN, float(a[1])))
         tid = current()
@@ -512,7 +497,7 @@ def main() -> None:
     elif len(a) == 2 and a[0] == "shake" and a[1] in ("on", "off"):
         print(json.dumps(shake(a[1] == "on")))
     else:
-        print(json.dumps({"ok": False, "message": "usage: list | set <theme> | size <px> | shake on|off | hold <seconds> | redcopy <theme>"}))
+        print(json.dumps({"ok": False, "message": "usage: list | set <theme> | size <px> | shake on|off | hold <seconds>"}))
         raise SystemExit(1)
 
 
