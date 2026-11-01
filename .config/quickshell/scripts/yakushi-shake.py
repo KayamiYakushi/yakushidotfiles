@@ -18,8 +18,6 @@ longer than the box it stayed in (back and forth, like KDE does it).
 """
 from __future__ import annotations
 
-import importlib.util
-import json
 import math
 import os
 import re
@@ -95,6 +93,8 @@ def settings() -> tuple[str, int, bool]:
 
 def helper_sizes(theme: str, base: int) -> list[int]:
     """sizes of the helper theme, rebuilt when the theme or size changed"""
+    import json                                  # only needed here: keeps the
+    import importlib.util                        # resident process small
     try:
         info = json.loads(INFO.read_text())
         if info.get("theme") == theme and info.get("base") == base and \

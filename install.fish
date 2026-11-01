@@ -122,8 +122,11 @@ end
 
 # The red mouse cursor that comes with Yakushi (Settings -> Input -> Cursor).
 mkdir -p "$HOME/.local/share/icons"
-rm -rf "$HOME/.local/share/icons/Yakushi-Red"
-cp -a "$repo/.local/share/icons/Yakushi-Red" "$HOME/.local/share/icons/"
+for t in Yakushi-Red Yakushi-Red-Dark
+    rm -rf "$HOME/.local/share/icons/$t"
+    cp -a "$repo/.local/share/icons/$t" "$HOME/.local/share/icons/"
+end
+rm -f "$HOME/.cache/yakushi/cursors/shake.json"     # rebuild the shake helper from it
 
 mkdir -p (dirname "$systemd_dst")
 rm -rf "$systemd_dst"

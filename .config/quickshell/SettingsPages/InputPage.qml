@@ -120,6 +120,15 @@ Item {
             cursorSize = px
     }
 
+    // red copy of the theme in use, made on this computer (yakushi-cursor-tint.py)
+    readonly property bool canRedCopy: cursorTheme !== "" && !cursorTheme.startsWith("Yakushi-Red")
+                                       && !/-red$/i.test(cursorTheme)
+
+    function makeRedCopy() {
+        if (canRedCopy && cursorCall(["redcopy", cursorTheme]))
+            cursorNote = "Making a red copy…"
+    }
+
     function setCursorShake(on) {
         if (cursorCall(["shake", on ? "on" : "off"]))
             cursorShake = on
@@ -628,8 +637,46 @@ Item {
         font.letterSpacing: 2
     }
 
-    Text {
+    // "+ RED COPY": a red version of the selected theme
+    Rectangle {
+        id: redCopy
+
+        visible: page.canRedCopy
         anchors.right: parent.right
+        anchors.verticalCenter: cursorTitle.verticalCenter
+        width: visible ? redCopyText.implicitWidth + 18 : 0
+        height: 20
+        radius: Theme.rounded ? 10 : 0
+        color: redMouse.containsMouse ? Theme.tint("#e2202f", 0.22) : Theme.tint("#e2202f", 0.12)
+        border.width: 1
+        border.color: Theme.tint("#e2202f", 0.7)
+        opacity: cursorJob.running ? 0.5 : 1
+
+        Text {
+            id: redCopyText
+
+            anchors.centerIn: parent
+            text: "+ RED COPY"
+            color: Theme.ink
+            font.family: Theme.mono
+            font.pixelSize: 8
+            font.letterSpacing: 1
+        }
+
+        MouseArea {
+            id: redMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: !cursorJob.running
+            cursorShape: Qt.PointingHandCursor
+            onClicked: page.makeRedCopy()
+        }
+    }
+
+    Text {
+        anchors.right: redCopy.left
+        anchors.rightMargin: redCopy.visible ? 12 : 0
         anchors.baseline: cursorTitle.baseline
         anchors.left: cursorTitle.right
         anchors.leftMargin: 16
