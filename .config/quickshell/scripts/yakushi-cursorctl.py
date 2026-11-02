@@ -9,6 +9,8 @@
                                      (yakushi-shake.py, KDE style)
     yakushi-cursorctl.py hold <s>    how long it stays big after the shaking
                                      stops (0.1 .. 3 seconds)
+    yakushi-cursorctl.py login       give Hyprland's own pointer the saved
+                                     theme (hyprland.lua runs it at login)
 
 A theme is any folder in an icon directory with a `cursors/` folder
 (XCursor) or a `manifest.hl` (hyprcursor). `list` also saves a small PNG of
@@ -477,9 +479,30 @@ def listing(**extra) -> dict:
             "themes": themes, **extra}
 
 
+def login() -> None:
+    """Hyprland draws its own pointer with the theme it found when it started,
+    before cursor.local.lua is read; set the saved one right away (a few
+    tries while Hyprland is still coming up)"""
+    if shutil.which("hyprctl") is None:
+        return
+    import time
+    tid, sz = current(), str(size())
+    for _ in range(10):
+        try:
+            out = subprocess.run(["hyprctl", "setcursor", tid, sz],
+                                 capture_output=True, text=True, timeout=3).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            out = ""
+        if out.strip() == "ok":
+            return
+        time.sleep(0.3)
+
+
 def main() -> None:
     a = sys.argv[1:]
-    if a == ["list"]:
+    if a == ["login"]:
+        login()
+    elif a == ["list"]:
         print(json.dumps(listing()))
     elif len(a) == 2 and a[0] == "set":
         theme = next((t for t in find_themes() if t["id"] == a[1]), None)
@@ -497,7 +520,7 @@ def main() -> None:
     elif len(a) == 2 and a[0] == "shake" and a[1] in ("on", "off"):
         print(json.dumps(shake(a[1] == "on")))
     else:
-        print(json.dumps({"ok": False, "message": "usage: list | set <theme> | size <px> | shake on|off | hold <seconds>"}))
+        print(json.dumps({"ok": False, "message": "usage: list | set <theme> | size <px> | shake on|off | hold <seconds> | login"}))
         raise SystemExit(1)
 
 

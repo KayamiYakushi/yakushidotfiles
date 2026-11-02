@@ -20,6 +20,7 @@ local startup = {
     "hyprsunset",
     "sleep 1.5 && python3 ~/.config/hypr/scripts/yakushi-nightlightctl.py restore",
     "awww-daemon",
+    "python3 ~/.config/quickshell/scripts/yakushi-cursorctl.py login", -- your cursor from the first second
     "python3 ~/.config/quickshell/scripts/yakushi-shake.py --login",   -- shake to find, if on
 }
 
