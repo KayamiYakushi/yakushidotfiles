@@ -264,6 +264,7 @@ Item {
             Rectangle {
                 id: frame
 
+                x: 3                    // room for the corner ticks: the page clips at x = 0
                 width: 148
                 height: 148
                 color: Theme.tint(Theme.ink, 0.03)
@@ -338,10 +339,10 @@ Item {
             }
 
             // corner ticks on the picture
-            Rectangle { x: -3; y: -3; width: 10; height: 2; color: Theme.accent }
-            Rectangle { x: -3; y: -3; width: 2; height: 10; color: Theme.accent }
-            Rectangle { x: frame.width - 7; y: frame.height + 1; width: 10; height: 2; color: Theme.accent }
-            Rectangle { x: frame.width + 1; y: frame.height - 7; width: 2; height: 10; color: Theme.accent }
+            Rectangle { x: frame.x - 3; y: frame.y - 3; width: 10; height: 2; color: Theme.accent }
+            Rectangle { x: frame.x - 3; y: frame.y - 3; width: 2; height: 10; color: Theme.accent }
+            Rectangle { x: frame.x + frame.width - 7; y: frame.y + frame.height + 1; width: 10; height: 2; color: Theme.accent }
+            Rectangle { x: frame.x + frame.width + 1; y: frame.y + frame.height - 7; width: 2; height: 10; color: Theme.accent }
 
             Item {
                 anchors.left: frame.right

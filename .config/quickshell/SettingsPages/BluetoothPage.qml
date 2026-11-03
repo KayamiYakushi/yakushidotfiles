@@ -4,8 +4,10 @@ import Quickshell.Bluetooth
 import "../"
 
 // Settings -> Bluetooth.
-// Power switch and a scan button in the header; nearby and known devices
-// below, each with one button (connect / disconnect). Scanning runs only
+// Power switch and a scan button in the header. Below, three groups:
+// CONNECTED, MY DEVICES (paired before) and NEARBY (found by the scan), each
+// device with one button (connect / disconnect); the gear of a paired one
+// shows its battery and address, auto-connect, and FORGET. Scanning runs only
 // while this page is on screen and stops by itself after 30 seconds.
 Item {
     id: page
@@ -69,6 +71,50 @@ Item {
     }
 
     // ---- devices
+    property string opened: ""          // address whose details are open
+
+    function listOf() {
+        var m = radio ? radio.devices : null
+        if (!m)
+            return []
+        // an ObjectModel has a `values` list; a plain list has Array's values()
+        var v = m.values
+        return v !== undefined && typeof v !== "function" ? v : m
+    }
+
+    // "connected" | "mine" | "nearby"
+    function groupOf(dev) {
+        if (dev.state === BluetoothDeviceState.Connected || dev.state === BluetoothDeviceState.Disconnecting)
+            return "connected"
+        return dev.paired || dev.bonded ? "mine" : "nearby"
+    }
+
+    // how many in each group (re-evaluated when a device changes state)
+    readonly property var counts: {
+        var c = { connected: 0, mine: 0, nearby: 0 }
+        var list = listOf()
+        for (var i = 0; i < list.length; i++)
+            c[groupOf(list[i])]++
+        return c
+    }
+
+    function forget(dev) {
+        say("Forgot " + nameOf(dev) + ".")
+        opened = ""
+        dev.forget()
+    }
+
+    function kindOf(iconName) {
+        var n = String(iconName || "").toLowerCase()
+        var names = [["headset", "Headset"], ["headphone", "Headphones"], ["speaker", "Speaker"], ["audio", "Audio"],
+                     ["keyboard", "Keyboard"], ["mouse", "Mouse"], ["phone", "Phone"], ["gaming", "Game controller"],
+                     ["joystick", "Game controller"], ["computer", "Computer"], ["tablet", "Tablet"]]
+        for (var i = 0; i < names.length; i++)
+            if (n.indexOf(names[i][0]) >= 0)
+                return names[i][1]
+        return "Device"
+    }
+
     function nameOf(dev) {
         return dev.name || dev.address || "device"
     }
@@ -187,7 +233,7 @@ Item {
         anchors.topMargin: page.note === "" ? 0 : 12
         anchors.left: head.left
         anchors.right: head.right
-        height: page.note === "" ? 0 : implicitHeight
+        height: page.note === "" ? 0 : 14
         visible: page.note !== ""
         text: page.note
         horizontalAlignment: Text.AlignHCenter
@@ -233,11 +279,257 @@ Item {
         }
     }
 
+    // "CONNECTED · 2", with a little room above
+    component GroupTitle: Item {
+        property string label: ""
+        property int count: 0
+        property string hint: ""
+
+        height: 36
+
+        Text {
+            id: groupLabel
+
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 6
+            text: parent.label + "  ·  " + parent.count
+            color: Theme.inkSoft
+            font.family: Theme.mono
+            font.pixelSize: 10
+            font.letterSpacing: 2
+        }
+
+        Text {
+            anchors.right: parent.right
+            anchors.baseline: groupLabel.baseline
+            text: parent.hint
+            color: Theme.inkMute
+            font.family: Theme.mono
+            font.pixelSize: 9
+        }
+    }
+
+    component Fact: Column {
+        property string key: ""
+        property string value: ""
+
+        spacing: 3
+
+        Text {
+            text: parent.key
+            color: Theme.inkMute
+            font.family: Theme.mono
+            font.pixelSize: 8
+            font.letterSpacing: 2
+        }
+
+        Text {
+            width: parent.width
+            text: parent.value !== "" ? parent.value : "—"
+            elide: Text.ElideRight
+            color: Theme.ink
+            font.family: Theme.mono
+            font.pixelSize: 10
+        }
+    }
+
+    // one device: its row and, for paired ones, the details under it
+    component DeviceEntry: Column {
+        id: entry
+
+        required property BluetoothDevice modelData
+        property string group: ""
+        property var host: null              // the page: inline components do not see its id
+
+        readonly property bool linked: modelData.state === BluetoothDeviceState.Connected
+        readonly property bool working: modelData.pairing
+            || modelData.state === BluetoothDeviceState.Connecting
+            || modelData.state === BluetoothDeviceState.Disconnecting
+        readonly property bool known: modelData.paired || modelData.bonded
+        readonly property bool open: known && host.opened === modelData.address
+
+        visible: host !== null && host.groupOf(modelData) === group
+        width: parent ? parent.width : 0
+        spacing: 6
+
+        ConnRow {
+            width: parent.width
+            glyph: host.glyphFor(entry.modelData.icon)
+            title: host.nameOf(entry.modelData)
+            detail: host.detailOf(entry.modelData, entry.linked)
+            active: entry.linked
+            open: entry.open
+            gear: entry.known
+            action: host.buttonText(entry.modelData)
+            danger: entry.linked
+            busy: entry.working
+            onPressed: host.act(entry.modelData)
+            onSettings: host.opened = entry.open ? "" : entry.modelData.address
+        }
+
+        Rectangle {
+            visible: entry.open
+            width: parent.width
+            height: visible ? details.implicitHeight + 28 : 0
+            radius: Theme.rounded ? 12 : 0
+            color: Theme.card
+            border.width: 1
+            border.color: Theme.line
+
+            Column {
+                id: details
+
+                x: 14
+                y: 14
+                width: parent.width - 28
+                spacing: 12
+
+                // battery, when the device tells it
+                Item {
+                    visible: entry.modelData.batteryAvailable
+                    width: parent.width
+                    height: 26
+
+                    Text {
+                        id: batteryLabel
+
+                        text: "BATTERY"
+                        color: Theme.inkMute
+                        font.family: Theme.mono
+                        font.pixelSize: 8
+                        font.letterSpacing: 2
+                    }
+
+                    Text {
+                        anchors.right: parent.right
+                        anchors.baseline: batteryLabel.baseline
+                        text: Math.round(entry.modelData.battery * 100) + "%"
+                        color: entry.modelData.battery < 0.2 ? Theme.alert : Theme.ink
+                        font.family: Theme.mono
+                        font.pixelSize: 10
+                    }
+
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: 4
+                        radius: Theme.rounded ? 2 : 0
+                        color: Theme.groove
+
+                        Rectangle {
+                            width: parent.width * Math.max(0, Math.min(1, entry.modelData.battery))
+                            height: parent.height
+                            radius: parent.radius
+                            color: entry.modelData.battery < 0.2 ? Theme.alert : Theme.accent
+                        }
+                    }
+                }
+
+                Grid {
+                    id: facts
+
+                    width: parent.width
+                    columns: width > 540 ? 4 : 2
+                    columnSpacing: 16
+                    rowSpacing: 10
+
+                    readonly property real cell: (width - columnSpacing * (columns - 1)) / columns
+
+                    Fact { width: facts.cell; key: "TYPE"; value: host.kindOf(entry.modelData.icon) }
+                    Fact { width: facts.cell; key: "ADDRESS"; value: entry.modelData.address }
+                    Fact { width: facts.cell; key: "STATUS"; value: entry.linked ? "Connected" : "Paired, not connected" }
+                    Fact { width: facts.cell; key: "NAME ON DEVICE"; value: entry.modelData.deviceName || entry.modelData.name || "" }
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: Theme.line
+                }
+
+                Item {
+                    width: parent.width
+                    height: 22
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "CONNECT AUTOMATICALLY"
+                        color: Theme.inkSoft
+                        font.family: Theme.mono
+                        font.pixelSize: 9
+                        font.letterSpacing: 2
+                    }
+
+                    Switch {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        checked: entry.modelData.trusted
+                        onToggled: entry.modelData.trusted = !entry.modelData.trusted
+                    }
+                }
+
+                Item {
+                    width: parent.width
+                    height: 28
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.right: forgetButton.left
+                        anchors.rightMargin: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        elide: Text.ElideRight
+                        text: entry.modelData.trusted ? "It reconnects by itself when it is near and on."
+                            : "It connects only when you press CONNECT."
+                        color: Theme.inkMute
+                        font.family: Theme.mono
+                        font.pixelSize: 9
+                    }
+
+                    Rectangle {
+                        id: forgetButton
+
+                        anchors.right: parent.right
+                        width: forgetText.implicitWidth + 26
+                        height: 28
+                        radius: Theme.rounded ? 14 : 0
+                        color: forgetMouse.containsMouse ? Theme.tint(Theme.alert, 0.18) : "transparent"
+                        border.width: 1
+                        border.color: Theme.tint(Theme.alert, 0.6)
+
+                        Text {
+                            id: forgetText
+
+                            anchors.centerIn: parent
+                            text: "FORGET DEVICE"
+                            color: Theme.alert
+                            font.family: Theme.mono
+                            font.pixelSize: 9
+                            font.letterSpacing: 1
+                        }
+
+                        MouseArea {
+                            id: forgetMouse
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: host.forget(entry.modelData)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ScrollHint {
+        flick: scroller
+    }
+
     Flickable {
         id: scroller
 
         anchors.top: noteLine.bottom
-        anchors.topMargin: 18
+        anchors.topMargin: 6
         anchors.left: head.left
         anchors.right: head.right
         anchors.bottom: parent.bottom
@@ -261,134 +553,63 @@ Item {
             Notice {
                 visible: page.radio !== null && !page.powered
                 anchors.horizontalCenter: parent.horizontalCenter
-                glyph: ""
+                glyph: String.fromCodePoint(0xF00B2)
                 headline: "BLUETOOTH IS OFF"
                 hint: "Turn it on to see devices."
             }
 
+            // ---- connected now
+            GroupTitle {
+                visible: page.powered && page.counts.connected > 0
+                width: devices.width
+                label: "CONNECTED"
+                count: page.counts.connected
+            }
+
+            Repeater {
+                model: page.powered && page.radio ? page.radio.devices : null
+                delegate: DeviceEntry { group: "connected"; host: page }
+            }
+
+            // ---- paired before
+            GroupTitle {
+                visible: page.powered && page.counts.mine > 0
+                width: devices.width
+                label: "MY DEVICES"
+                count: page.counts.mine
+                hint: "paired before"
+            }
+
+            Repeater {
+                model: page.powered && page.radio ? page.radio.devices : null
+                delegate: DeviceEntry { group: "mine"; host: page }
+            }
+
+            // ---- found by the scan
+            GroupTitle {
+                visible: page.powered && (page.counts.nearby > 0 || page.searching)
+                width: devices.width
+                label: "NEARBY"
+                count: page.counts.nearby
+                hint: page.searching ? "looking…" : "press refresh to look again"
+            }
+
+            Repeater {
+                model: page.powered && page.radio ? page.radio.devices : null
+                delegate: DeviceEntry { group: "nearby"; host: page }
+            }
+
             Notice {
-                visible: page.powered && deviceList.count === 0
+                visible: page.powered && page.counts.connected + page.counts.mine + page.counts.nearby === 0
                 anchors.horizontalCenter: parent.horizontalCenter
-                glyph: ""
+                glyph: String.fromCodePoint(0xF00AF)
                 headline: page.searching ? "LOOKING FOR DEVICES..." : "NO DEVICES FOUND"
                 hint: page.searching ? "Keep this page open while devices appear." : "Press the refresh button to look again."
             }
 
-            Repeater {
-                id: deviceList
-
-                model: page.radio ? page.radio.devices : null
-
-                delegate: Rectangle {
-                    id: row
-
-                    required property BluetoothDevice modelData
-                    readonly property bool linked: modelData.state === BluetoothDeviceState.Connected
-                    readonly property bool working: modelData.pairing
-                        || modelData.state === BluetoothDeviceState.Connecting
-                        || modelData.state === BluetoothDeviceState.Disconnecting
-
-                    width: devices.width
-                    height: 60
-                    radius: Theme.rounded ? 12 : 0
-                    color: linked ? Theme.tint(Theme.accent, 0.12)
-                        : over.hovered ? Theme.tint(Theme.ink, 0.05) : Theme.card
-                    border.width: 1
-                    border.color: linked ? Theme.accent : over.hovered ? Theme.lineHot : Theme.line
-
-                    Behavior on color {
-                        ColorAnimation { duration: Theme.tFast }
-                    }
-
-                    HoverHandler {
-                        id: over
-                    }
-
-                    Rectangle {
-                        id: badge
-
-                        x: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 36
-                        height: 36
-                        radius: Theme.rounded ? 10 : 0
-                        color: row.linked ? Theme.tint(Theme.accent, 0.18) : Theme.tint(Theme.ink, 0.05)
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: page.glyphFor(row.modelData.icon)
-                            color: row.linked ? Theme.accent : Theme.inkSoft
-                            font.family: Theme.glyphs
-                            font.pixelSize: 17
-                        }
-                    }
-
-                    Text {
-                        id: title
-
-                        anchors.left: badge.right
-                        anchors.leftMargin: 12
-                        anchors.right: button.left
-                        anchors.rightMargin: 12
-                        anchors.bottom: parent.verticalCenter
-                        anchors.bottomMargin: 1
-                        text: page.nameOf(row.modelData)
-                        elide: Text.ElideRight
-                        color: Theme.ink
-                        font.family: Theme.mono
-                        font.pixelSize: 12
-                    }
-
-                    Text {
-                        anchors.left: title.left
-                        anchors.right: title.right
-                        anchors.top: parent.verticalCenter
-                        anchors.topMargin: 3
-                        text: page.detailOf(row.modelData, row.linked)
-                        elide: Text.ElideRight
-                        color: row.linked ? Theme.accent : Theme.inkMute
-                        font.family: Theme.mono
-                        font.pixelSize: 9
-                    }
-
-                    Rectangle {
-                        id: button
-
-                        anchors.right: parent.right
-                        anchors.rightMargin: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: label.implicitWidth + 24
-                        height: 28
-                        radius: Theme.rounded ? 14 : 0
-                        opacity: row.working ? 0.6 : 1
-                        color: row.linked
-                            ? (press.containsMouse ? Theme.tint(Theme.alert, 0.18) : "transparent")
-                            : Theme.tint(Theme.accent, press.containsMouse ? 0.24 : 0.12)
-                        border.width: 1
-                        border.color: Theme.tint(row.linked ? Theme.alert : Theme.accent, 0.6)
-
-                        Text {
-                            id: label
-
-                            anchors.centerIn: parent
-                            text: page.buttonText(row.modelData)
-                            color: row.linked ? Theme.alert : Theme.ink
-                            font.family: Theme.mono
-                            font.pixelSize: 9
-                            font.letterSpacing: 1
-                        }
-
-                        MouseArea {
-                            id: press
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            enabled: !row.working
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: page.act(row.modelData)
-                        }
-                    }
-                }
+            Item {
+                width: devices.width
+                height: 12
             }
         }
     }

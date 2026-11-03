@@ -432,10 +432,28 @@ def push_everywhere(tid: str, sz: int) -> bool:
         ini = HOME / f".config/gtk-{v}.0/settings.ini"
         set_ini(ini, "gtk-cursor-theme-name", tid)
         set_ini(ini, "gtk-cursor-theme-size", str(sz))
-    default = HOME / ".icons/default/index.theme"
-    default.parent.mkdir(parents=True, exist_ok=True)
-    default.write_text(f"[Icon Theme]\nName=Default\nInherits={tid}\n")
+    write_defaults(tid)
     return live
+
+
+def write_defaults(tid: str) -> None:
+    """the "default" theme X11 apps fall back to. Steam (and every Chromium /
+    Electron app on X11) ignores XCURSOR_THEME and only looks at "default",
+    and ~/.local/share/icons/default wins over ~/.icons/default - Plasma, for
+    one, leaves a Breeze one there - so both point at your theme"""
+    for base in (HOME / ".local/share/icons", HOME / ".icons"):
+        folder = base / "default"
+        if folder.is_symlink():                  # a link to some other theme
+            folder.unlink()
+        cursors = folder / "cursors"
+        if cursors.is_symlink():
+            cursors.unlink()
+        elif cursors.is_dir():                   # its own cursors would win over Inherits
+            cursors.rename(folder / "cursors.old")
+        folder.mkdir(parents=True, exist_ok=True)
+        want = f"[Icon Theme]\nName=Default\nInherits={tid}\n"
+        if read(folder / "index.theme") != want:
+            (folder / "index.theme").write_text(want)
 
 
 def apply(theme: dict) -> dict:
@@ -487,6 +505,10 @@ def login() -> None:
         return
     import time
     tid, sz = current(), str(size())
+    try:
+        write_defaults(tid)                      # in case something else changed it
+    except OSError:
+        pass
     for _ in range(10):
         try:
             out = subprocess.run(["hyprctl", "setcursor", tid, sz],

@@ -31,8 +31,13 @@ hl.on("hyprland.start", function()
 end)
 
 -- Environment ------------------------------------------------------------------
+local home = os.getenv("HOME") or ""
 for name, value in pairs({
     XCURSOR_SIZE = "24",
+    -- where X11 apps look for cursors: Steam and other apps that bring an old
+    -- libXcursor never look in ~/.local/share/icons by themselves, so they
+    -- missed Yakushi Red and showed the default arrow
+    XCURSOR_PATH = home .. "/.local/share/icons:" .. home .. "/.icons:/usr/share/icons:/usr/share/pixmaps",
     QT_QPA_PLATFORM = "wayland",
     MOZ_ENABLE_WAYLAND = "1",
 }) do
@@ -41,7 +46,7 @@ end
 
 -- the mouse cursor picked in Settings -> Input (overrides XCURSOR_SIZE above
 -- only if you change it there)
-pcall(dofile, os.getenv("HOME") .. "/.config/hypr/cursor.local.lua")
+pcall(dofile, home .. "/.config/hypr/cursor.local.lua")
 
 -- Everything else, in one table --------------------------------------------------
 hl.config({

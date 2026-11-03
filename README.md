@@ -22,6 +22,11 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
 - **Cursor picker** — Input lists every installed cursor theme with a preview, sets the size
   and can grow the cursor when you shake the mouse. Our own cursor, Yakushi Red, comes
   with it, white edged or black edged (Yakushi Red Dark).
+- **Network** — Ethernet and Wi-Fi in one page: the connection in use with its live traffic,
+  a speed test (with the average of the last tests), and per connection DNS (automatic,
+  Cloudflare, Google, Quad9, AdGuard or your own), automatic or manual IP and auto-connect.
+- **Bluetooth** — connected devices, your paired devices and the ones nearby in separate
+  groups, with battery level, auto-connect and forget.
 - **Default apps** — scans what is installed and sets the terminal, shell, file manager,
   browser, editor and viewers.
 - **Wallpaper picker** (`SUPER + W`) — every image under `~/Documents`, applied with `awww`.
