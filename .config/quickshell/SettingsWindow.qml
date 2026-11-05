@@ -26,6 +26,7 @@ PanelWindow {
     // show(), or show("Tasks") to open on that page
     function show(start) {
         page = Math.max(0, pageIndex(start || ""))
+        Qt.callLater(function() { outside.forceActiveFocus() })   // Esc works right away
         // always opens at its default size, in the middle
         Theme.settingsWidth = 0
         Theme.settingsHeight = 0
@@ -93,6 +94,7 @@ PanelWindow {
     readonly property var pages: [
         { name: "System",       jp: "システム",       file: "SystemPage",      glyph: "󰒓" },
         { name: "Tasks",        jp: "タスク",         file: "TasksPage",       glyph: String.fromCodePoint(0xF04C5) },
+        { name: "Security",     jp: "セキュリティ",   file: "SecurityPage",    glyph: String.fromCodePoint(0xF0565) },
         { name: "Appearance",   jp: "外観",           file: "AppearancePage",  glyph: "󰏘" },
         { name: "Top Bar",      jp: "トップバー",     file: "TopBarPage",      glyph: String.fromCodePoint(0xF1513) },
         { name: "Login Screen", jp: "ログイン画面",   file: "LoginScreenPage", glyph: "󰌾" },
@@ -148,6 +150,13 @@ PanelWindow {
 
         Keys.onEscapePressed: picker.opened ? picker.dismiss() : settings.hide()
 
+        // and when nothing has the keyboard focus (after a text field let go)
+        Shortcut {
+            sequence: "Escape"
+            enabled: settings.showing && !settings.stepAside && outside.Window.activeFocusItem === null
+            onActivated: picker.opened ? picker.dismiss() : settings.hide()
+        }
+
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -181,6 +190,10 @@ PanelWindow {
         width: Math.max(minW, Math.min(Theme.settingsWidth > 0 ? Theme.settingsWidth : 1020, settings.width - 40))
         height: Math.max(minH, Math.min(Theme.settingsHeight > 0 ? Theme.settingsHeight : 660, settings.height - 40))
         still: resizer.active || resizer.hovering > 0
+
+        // Esc from anywhere inside the card (a text field that does not use
+        // Esc itself passes it up to here)
+        Keys.onEscapePressed: picker.opened ? picker.dismiss() : settings.hide()
         shown: settings.showing
 
         // clicks on the card stay on the card
@@ -454,6 +467,8 @@ PanelWindow {
                 }
 
                 Column {
+                    id: pageList
+
                     y: 14
                     width: parent.width - 1
 
@@ -531,9 +546,10 @@ PanelWindow {
                     }
                 }
 
-                // 薬師 (Yakushi), large and faint
+                // 薬師 (Yakushi), large and faint; only where the list leaves room
                 Text {
                     x: 18
+                    visible: y >= pageList.y + pageList.height + 8
                     anchors.bottom: listFoot.top
                     anchors.bottomMargin: 10
                     text: "薬\n師"

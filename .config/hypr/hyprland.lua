@@ -22,6 +22,7 @@ local startup = {
     "awww-daemon",
     "python3 ~/.config/quickshell/scripts/yakushi-cursorctl.py login", -- your cursor from the first second
     "python3 ~/.config/quickshell/scripts/yakushi-shake.py --login",   -- shake to find, if on
+    "sleep 8 && nice -n 10 python3 ~/.config/quickshell/scripts/yakushi-securityctl.py login", -- one guard check, then it exits
 }
 
 hl.on("hyprland.start", function()

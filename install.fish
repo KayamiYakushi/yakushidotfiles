@@ -62,7 +62,11 @@ set -l packages \
     noto-fonts-cjk \
     ttf-jetbrains-mono-nerd \
     pciutils \
-    xdg-utils
+    xdg-utils \
+    ufw \
+    arch-audit \
+    pacman-contrib \
+    hypridle
 
 echo "Installing required official-repository packages..."
 sudo -v
@@ -221,6 +225,15 @@ else
     sudo systemctl enable --now NetworkManager.service
 end
 sudo systemctl enable --now bluetooth.service
+
+# Firewall (Settings -> Security): block what comes in, allow what goes out.
+# Left alone when another firewall already runs.
+if not systemctl is-active --quiet firewalld.service; and not systemctl is-active --quiet nftables.service
+    sudo ufw default deny incoming >/dev/null
+    and sudo ufw default allow outgoing >/dev/null
+    and sudo ufw --force enable >/dev/null
+    and sudo systemctl enable --now ufw.service
+end
 
 # Enable SDDM for the next boot (never start it inside the current session).
 # If another display manager (GDM, LightDM, ly, ...) is in use, leave it alone.

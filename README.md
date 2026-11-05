@@ -10,8 +10,8 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
 ## Features
 
 - **Settings** (`SUPER + I`) — accent colours, window gaps / corners / shadow / border, top
-  bar, login screen, keybinds, default apps, input, sound, monitors, network, Bluetooth and
-  tasks. Every change applies instantly.
+  bar, login screen, keybinds, default apps, input, sound, monitors, network, Bluetooth,
+  tasks and security. Every change applies instantly.
   Move it by its title strip or with `SUPER + left drag`, resize it by its edges or with
   `SUPER + right drag`; it always opens at its default size in the middle.
 - **Island top bar** — workspaces, RAM, CPU, temperatures, now playing (with a drop-down player
@@ -31,11 +31,23 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
   RESPONDING, STUCK, PAUSED) and can be ended right there: END asks politely, FORCE END
   stops them at once, services can be stopped. **REMOVE A PACKAGE** takes a program off
   without a trace: it shows first what goes (the package, dependencies nothing else needs,
-  its services, its files in your home folder), asks for your password once, and keeps your
+  its services, its files in your home folder), asks for your password right in the page
+  (it goes to sudo through a pipe and is not kept), and keeps your
   files in a trash so **UNDO** can put everything back. The base system, kernels and what
   Yakushi runs on are protected.
   If the bar or Settings ever freezes,
   `SUPER + CTRL + Esc` restarts them without touching your windows.
+- **Security** — nothing runs in the background for it. The page shows the firewall
+  (ufw: everything coming in is blocked, going out is allowed), what listens to your network,
+  the SSH server, waiting updates and the ones that fix known security holes (arch-audit),
+  auto lock (hypridle), disk encryption and Secure Boot, each with its fix one click away.
+  **UPDATE** runs `pacman -Syu` right in the page with its progress (your password is asked
+  there); pacman runs on its own, so closing Settings never stops it halfway. Nothing ever
+  updates by itself. A **guard** checks once at login what changed in the places an intruder
+  would use to stay (what starts at login, services and timers, users and the wheel group,
+  SSH keys, shell start files, `/etc/ld.so.preload`, open ports) and lists failed passwords,
+  sudo use and SSH logins; only serious news shows as a Hyprland notification. **DEEP SCAN**
+  compares every system program and library with its package.
 - **Network** — Ethernet and Wi-Fi in one page: the connection in use with its live traffic,
   a speed test (with the average of the last tests), and per connection DNS (automatic,
   Cloudflare, Google, Quad9, AdGuard or your own), automatic or manual IP and auto-connect.

@@ -13,10 +13,57 @@ Rectangle {
 
     signal closed()
 
+    property var hostWindow: null
+
+    // your password is asked right here, in the footer (no dialog behind
+    // Settings); it goes to sudo through a pipe and is not kept
+    property string pending: ""          // "remove" or "undo:<id>" waiting for the password
+    property string secret: ""           // only between "OK" and the helper starting
+
+    function askPassword(what) {
+        pending = what
+        passwordRow.error = ""
+        Qt.callLater(passwordRow.open)
+    }
+
+    function withPassword(pw) {
+        var what = pending
+        pending = ""
+        secret = pw
+        if (what === "remove") {
+            note = "Removing…"
+            noteOk = true
+            doJob.stdinEnabled = true
+            doJob.command = ["python3", helper, "--password-stdin", "remove",
+                             JSON.stringify({ target: target, cascade: cascade, files: chosenFiles() })]
+            doJob.running = true
+        } else if (what.indexOf("undo:") === 0) {
+            note = "Putting it back… (reinstalling needs the internet)"
+            noteOk = true
+            trashJob.stdinEnabled = true
+            trashJob.command = ["python3", helper, "--password-stdin", "undo", what.slice(5)]
+            trashJob.running = true
+        }
+    }
+
+    function giveSecret(job) {
+        job.write(secret + "\n")
+        secret = ""
+        job.stdinEnabled = false          // closes its stdin
+    }
+
+    function wrongPassword(what) {
+        askPassword(what)
+        passwordRow.error = "Wrong password. Try again."
+        note = ""
+    }
+
     readonly property string helper: (Quickshell.env("HOME") || "") + "/.config/quickshell/scripts/yakushi-removectl.py"
 
     property string view: "search"       // search | plan | removed
     property string query: ""
+    property string scope: "mine"         // mine (installed by you) | all | unused
+    property var counts: ({})
     property var found: []
     property int foundTotal: 0
     property var plan: null
@@ -38,6 +85,7 @@ Rectangle {
 
     // ---- entry points (TasksPage calls these)
     function openSearch(text) {
+        pending = ""
         view = "search"
         note = ""
         query = text || ""
@@ -45,7 +93,16 @@ Rectangle {
         runSearch()
     }
 
+    function openFirst() {
+        for (var i = 0; i < found.length; i++)
+            if (found[i].protected === "") {
+                openPlan([found[i].name])
+                return
+            }
+    }
+
     function openPlan(names) {
+        pending = ""
         view = "plan"
         target = names
         cascade = false
@@ -59,6 +116,7 @@ Rectangle {
     }
 
     function openRemoved() {
+        pending = ""
         view = "removed"
         note = ""
         armed = ""
@@ -70,7 +128,7 @@ Rectangle {
     function runSearch() {
         if (searchJob.running)
             return
-        searchJob.command = ["python3", helper, "search", query]
+        searchJob.command = ["python3", helper, "search", query, scope]
         searchJob.running = true
     }
 
@@ -106,19 +164,15 @@ Rectangle {
             return
         }
         armed = ""
-        note = "Removing… (your password is asked once)"
-        noteOk = true
-        doJob.command = ["python3", helper, "remove", JSON.stringify({ target: target, cascade: cascade, files: chosenFiles() })]
-        doJob.running = true
+        note = ""
+        askPassword("remove")
     }
 
     function undo(id) {
         if (working)
             return
-        note = "Putting it back… (your password is asked once; reinstalling needs the internet)"
-        noteOk = true
-        trashJob.command = ["python3", helper, "undo", id]
-        trashJob.running = true
+        note = ""
+        askPassword("undo:" + id)
     }
 
     function empty(id) {
@@ -146,6 +200,14 @@ Rectangle {
         onTriggered: panel.runSearch()
     }
 
+    // how many are in the Yakushi trash (for REMOVED BEFORE (n))
+    Component.onCompleted: {
+        trashJob.command = ["python3", helper, "removed"]
+        trashJob.running = true
+    }
+
+    onScopeChanged: runSearch()
+
     function parse(text) {
         try {
             return JSON.parse(text)
@@ -160,6 +222,7 @@ Rectangle {
             onStreamFinished: {
                 var d = panel.parse(text)
                 panel.found = d.packages || []
+                panel.counts = d.counts || panel.counts
                 panel.foundTotal = d.total || 0
                 if (d.ok === false)
                     panel.say(d.message, false)
@@ -186,13 +249,21 @@ Rectangle {
 
     Process {
         id: doJob
+
+        onStarted: if (stdinEnabled) panel.giveSecret(doJob)
         stdout: StdioCollector {
             onStreamFinished: {
                 var d = panel.parse(text)
+                if (d.wrongPassword) {
+                    panel.wrongPassword("remove")
+                    return
+                }
                 panel.say(d.message || "", d.ok !== false)
                 if (d.ok !== false) {
                     panel.done = true
                     panel.doneId = d.id || ""
+                    trashJob.command = ["python3", panel.helper, "removed"]     // the count on top
+                    Qt.callLater(function() { if (!trashJob.running) trashJob.running = true })
                 }
             }
         }
@@ -200,11 +271,17 @@ Rectangle {
 
     Process {
         id: trashJob
+
+        onStarted: if (stdinEnabled) panel.giveSecret(trashJob)
         stdout: StdioCollector {
             onStreamFinished: {
                 var d = panel.parse(text)
                 if (d.removed !== undefined) {
                     panel.history = d.removed
+                    return
+                }
+                if (d.wrongPassword) {
+                    panel.wrongPassword("undo:" + trashJob.command[trashJob.command.length - 1])
                     return
                 }
                 panel.say(d.message || "", d.ok !== false)
@@ -346,7 +423,7 @@ Rectangle {
 
             Pill {
                 visible: panel.view !== "removed"
-                label: "REMOVED BEFORE"
+                label: "REMOVED BEFORE" + (panel.history.length ? "  " + panel.history.length : "")
                 onClicked: panel.openRemoved()
             }
 
@@ -383,7 +460,27 @@ Rectangle {
             color: Theme.line
         }
 
+        PasswordRow {
+            id: passwordRow
+
+            visible: panel.pending !== ""
+            z: 2
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            label: panel.pending === "remove" ? "Your password, to remove " + panel.target.join(", ")
+                : "Your password, to put it back"
+            action: panel.pending === "remove" ? "REMOVE" : "UNDO"
+            onAccepted: password => panel.withPassword(password)
+            onCanceled: {
+                panel.pending = ""
+                panel.note = "Cancelled. Nothing was changed."
+                panel.noteOk = true
+            }
+        }
+
         Text {
+            visible: panel.pending === ""
             anchors.left: parent.left
             anchors.right: footButtons.left
             anchors.rightMargin: 16
@@ -392,7 +489,7 @@ Rectangle {
             maximumLineCount: 2
             elide: Text.ElideRight
             text: panel.note !== "" ? panel.note
-                : panel.armed === "remove" ? "Click REMOVE again to do it. One password prompt follows."
+                : panel.armed === "remove" ? "Click REMOVE again; then your password is asked here."
                 : panel.view === "plan" && panel.plan && panel.plan.canRemove
                     ? "Frees about " + panel.bytes((panel.plan.freed || 0) + panel.filesSize)
                       + ". Your files go to the Yakushi trash: UNDO can bring everything back."
@@ -408,6 +505,7 @@ Rectangle {
         Row {
             id: footButtons
 
+            visible: panel.pending === ""
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 8
@@ -472,6 +570,8 @@ Rectangle {
                     font.family: Theme.mono
                     font.pixelSize: 12
                     focus: panel.view === "search"
+                    Keys.onReturnPressed: panel.openFirst()
+                    Keys.onEnterPressed: panel.openFirst()
                     onTextChanged: {
                         panel.query = text
                         searchDelay.restart()
@@ -488,14 +588,84 @@ Rectangle {
                 }
             }
 
-            Text {
+            Item {
                 visible: panel.view === "search"
-                text: panel.foundTotal > panel.found.length
-                    ? panel.foundTotal + " packages, showing " + panel.found.length + ". Type to narrow it down."
-                    : panel.found.length + (panel.found.length === 1 ? " package" : " packages")
-                color: Theme.inkMute
-                font.family: Theme.mono
-                font.pixelSize: 10
+                width: parent.width
+                height: 32
+
+                Row {
+                    id: scopes
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 6
+
+                    Repeater {
+                        model: [["mine", "YOU INSTALLED"], ["unused", "UNUSED"], ["all", "ALL"]]
+
+                        delegate: Rectangle {
+                            id: scopeChip
+
+                            required property var modelData
+                            readonly property bool on: panel.scope === modelData[0]
+                            readonly property var count: panel.counts[modelData[0]]
+
+                            width: scopeText.implicitWidth + 22
+                            height: 28
+                            color: on ? Theme.tint(Theme.accent, 0.16) : scopeMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : "transparent"
+                            border.width: 1
+                            border.color: on ? Theme.accent : Theme.line
+
+                            Text {
+                                id: scopeText
+
+                                anchors.centerIn: parent
+                                text: scopeChip.modelData[1] + (scopeChip.count !== undefined ? "  " + scopeChip.count : "")
+                                color: scopeChip.on ? Theme.ink : Theme.inkSoft
+                                font.family: Theme.mono
+                                font.pixelSize: 10
+                                font.letterSpacing: 1
+                            }
+
+                            MouseArea {
+                                id: scopeMouse
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: panel.scope = scopeChip.modelData[0]
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    anchors.left: scopes.right
+                    anchors.leftMargin: 14
+                    anchors.right: removeUnused.visible ? removeUnused.left : parent.right
+                    anchors.rightMargin: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    text: panel.scope === "unused" && panel.found.length === 0 && !searchJob.running
+                        ? "Nothing unused: clean."
+                        : panel.foundTotal > panel.found.length
+                            ? "showing " + panel.found.length + " of " + panel.foundTotal + " · type to narrow it down"
+                        : panel.scope === "unused" ? "dependencies nothing needs any more"
+                        : "Enter opens the first one"
+                    color: Theme.inkMute
+                    font.family: Theme.mono
+                    font.pixelSize: 10
+                }
+
+                Pill {
+                    id: removeUnused
+
+                    visible: panel.scope === "unused" && panel.found.filter(function(p) { return p.protected === "" }).length > 1
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    label: "REMOVE ALL UNUSED"
+                    danger: true
+                    onClicked: panel.openPlan(panel.found.filter(function(p) { return p.protected === "" }).map(function(p) { return p.name }))
+                }
             }
 
             Repeater {
@@ -536,7 +706,11 @@ Rectangle {
                         anchors.right: pkgTag.left
                         anchors.rightMargin: 12
                         elide: Text.ElideRight
-                        text: pkgRow.modelData.protected !== "" ? "Protected: " + pkgRow.modelData.protected : pkgRow.modelData.desc
+                        text: pkgRow.modelData.protected !== "" ? "Protected: " + pkgRow.modelData.protected
+                            : pkgRow.modelData.desc + (pkgRow.modelData.neededCount > 0
+                                ? "   ·   needed by " + pkgRow.modelData.neededBy.join(", ")
+                                  + (pkgRow.modelData.neededCount > 3 ? " +" + (pkgRow.modelData.neededCount - 3) : "")
+                                : "")
                         color: pkgRow.modelData.protected !== "" ? Theme.alert : Theme.inkMute
                         font.family: Theme.mono
                         font.pixelSize: 10
@@ -548,8 +722,10 @@ Rectangle {
                         anchors.right: pkgSize.left
                         anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        text: pkgRow.modelData.explicit ? "YOU INSTALLED" : "DEPENDENCY"
-                        color: pkgRow.modelData.explicit ? Theme.accent : Theme.inkMute
+                        text: pkgRow.modelData.explicit ? "YOU INSTALLED"
+                            : pkgRow.modelData.neededCount === 0 ? "UNUSED" : "DEPENDENCY"
+                        color: pkgRow.modelData.explicit ? Theme.accent
+                            : pkgRow.modelData.neededCount === 0 ? Theme.alert : Theme.inkMute
                         font.family: Theme.mono
                         font.pixelSize: 9
                         font.letterSpacing: 1
@@ -586,6 +762,57 @@ Rectangle {
                 visible: panel.view === "plan" && panel.plan === null
                 text: "Working out what removing it would do… (nothing is changed)"
                 color: Theme.inkSoft
+            }
+
+            // it could not be worked out
+            Column {
+                visible: panel.view === "plan" && panel.plan !== null && panel.plan.failed === true
+                width: parent.width
+                spacing: 12
+
+                Plain {
+                    color: Theme.alert
+                    text: "This could not be planned: " + panel.note
+                }
+
+                Pill {
+                    label: "BACK"
+                    onClicked: panel.openSearch(panel.query)
+                }
+            }
+
+            // one line: what happens
+            Rectangle {
+                visible: panel.view === "plan" && panel.plan !== null && panel.plan.canRemove === true && !panel.done
+                width: parent.width
+                height: summary.implicitHeight + 22
+                color: Theme.tint(Theme.accent, 0.08)
+                border.width: 1
+                border.color: Theme.tint(Theme.accent, 0.4)
+
+                Plain {
+                    id: summary
+
+                    x: 12
+                    y: 11
+                    width: parent.width - 24
+                    text: {
+                        var p = panel.plan
+                        if (!p || !p.remove)
+                            return ""
+                        var n = p.remove.length
+                        var files = panel.chosenFiles().length
+                        var bits = [n + (n === 1 ? " package goes" : " packages go")]
+                        if (p.running && p.running.length)
+                            bits.push(p.running.length + " running " + (p.running.length === 1 ? "process closes" : "processes close"))
+                        if (p.units && p.units.system.length + p.units.user.length)
+                            bits.push((p.units.system.length + p.units.user.length) + " service(s) turned off")
+                        if (files)
+                            bits.push(files + (files === 1 ? " file" : " files") + " to the Yakushi trash")
+                        bits.push("about " + panel.bytes((p.freed || 0) + panel.filesSize) + " freed")
+                        return bits.join("  ·  ")
+                    }
+                }
             }
 
             // other programs need it

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Remove a package and what it left behind. Used by Settings -> Tasks.
 
-    yakushi-removectl.py search <text>      installed packages matching the text
+    yakushi-removectl.py search <text> [mine|all|unused]
+                                            installed packages matching the text: the
+                                            ones you installed (default), all, or the
+                                            unused ones (dependencies nothing needs now)
     yakushi-removectl.py plan <json>        what removing would do, changes nothing
     yakushi-removectl.py remove <json>      do it
     yakushi-removectl.py removed            what was removed before (the Yakushi trash)
@@ -26,10 +29,11 @@ What `plan` looks at:
     can bring everything back until you empty it
   * lines in your Hyprland config that start it (shown, not edited)
 
-The removal itself is one pkexec call (one password prompt): stop and
-disable the services, then pacman -Rns. pacman -n also deletes the system
-config files instead of leaving .pacsave copies. If you cancel the password
-prompt, nothing is changed.
+The removal itself is one call as root: stop and disable the services, then
+pacman -Rns (-n also deletes the system config files instead of leaving
+.pacsave copies). With --password-stdin your password (first line of stdin,
+from the field in Settings) goes to sudo through a pipe; without it pkexec
+asks. A wrong or missing password changes nothing.
 """
 from __future__ import annotations
 
@@ -152,7 +156,8 @@ def protected(name: str, kernel: str) -> str:
 # ---- what goes ------------------------------------------------------------------------
 def pacman_plan(targets: list[str], cascade: bool) -> tuple[list[str], dict[str, list[str]], str]:
     """(packages that go, {package: [needed by]} when blocked, error)"""
-    flags = "-Rnscp" if cascade else "-Rnsp"
+    # (-n cannot go with --print; the list is the same without it)
+    flags = "-Rscp" if cascade else "-Rsp"
     res = run(["pacman", flags, "--print-format", "%n", *targets])
     if res.returncode == 0:
         return [l.strip() for l in res.stdout.splitlines() if l.strip() and not l.startswith(("::", "warning"))], {}, ""
@@ -422,13 +427,12 @@ def remove(request: dict) -> dict:
     # 1. one password prompt: services off, then pacman (nothing changes if cancelled)
     script = ('while [ $# -gt 0 ] && [ "$1" != "--" ]; do systemctl disable --now "$1" >/dev/null 2>&1; shift; done; shift; '
               'exec pacman ' + ("-Rnsc" if p["cascade"] else "-Rns") + ' --noconfirm "$@"')
-    res = run(["pkexec", "/bin/sh", "-c", script, "yakushi-remove", *sys_units, "--", *names], 900)
-    if res.returncode in (126, 127):
-        return {"ok": False, "message": "Cancelled: the password was not given. Nothing was changed."}
+    result, err = tasks.as_root(["/bin/sh", "-c", script, "yakushi-remove", *sys_units, "--", *names], 900)
+    if result in ("wrong", "cancel", "notallowed"):
+        return {"ok": False, "wrongPassword": result == "wrong", "message": tasks.ROOT_MESSAGES[result]}
     still = [n for n in names if run(["pacman", "-Qq", n], 10).returncode == 0]
-    if res.returncode != 0 and len(still) == len(names):
-        err = [l for l in (res.stderr or res.stdout).splitlines() if l.strip()]
-        return {"ok": False, "message": "pacman did not remove it: " + (err[-1] if err else "unknown error")}
+    if result != "ok" and len(still) == len(names):
+        return {"ok": False, "message": "pacman did not remove it: " + (err or "unknown error")}
     gone = [n for n in names if n not in still]
     pkgs_info = {r["name"]: r for r in p["remove"]}
 
@@ -505,12 +509,11 @@ def undo(box_id: str) -> dict:
                   'd=""; while [ $# -gt 0 ] && [ "$1" != "--" ]; do d="$d $1"; shift; done; shift; '
                   '[ -n "$d" ] && pacman -D --asdeps $d >/dev/null; '
                   'for u in "$@"; do systemctl enable --now "$u" >/dev/null 2>&1; done; exit 0')
-        res = run(["pkexec", "/bin/sh", "-c", script, "yakushi-undo", *pkgs, "--", *deps, "--", *units], 1800)
-        if res.returncode in (126, 127):
-            return {"ok": False, "message": "Cancelled: the password was not given. Nothing was changed."}
-        if res.returncode != 0:
-            err = [l for l in (res.stderr or res.stdout).splitlines() if l.strip()]
-            problems.append("reinstalling failed (" + (err[-1] if err else "no internet, or not in the repositories") + ")")
+        result, err = tasks.as_root(["/bin/sh", "-c", script, "yakushi-undo", *pkgs, "--", *deps, "--", *units], 1800)
+        if result in ("wrong", "cancel", "notallowed"):
+            return {"ok": False, "wrongPassword": result == "wrong", "message": tasks.ROOT_MESSAGES[result]}
+        if result != "ok":
+            problems.append("reinstalling failed (" + (err or "no internet, or not in the repositories") + ")")
     restored = 0
     for f in m.get("files", []):
         rel = f["path"].removeprefix("~/")
@@ -544,25 +547,36 @@ def empty(box_id: str) -> dict:
     return {"ok": True, "message": "Deleted for good."}
 
 
-def search(text: str) -> dict:
+def search(text: str, scope: str = "mine") -> dict:
+    """scope: mine (installed by you), all, unused (dependencies nothing needs any more)"""
     q = text.strip().lower()
     pkgs = tasks.load_packages()
+    required_by, optional_for = tasks.reverse_deps(pkgs)
     kernel = running_kernel_pkg()
+    unused = {n for n, p in pkgs.items() if not p["explicit"] and not required_by.get(n)}
     hits = []
     for p in pkgs.values():
+        if scope == "mine" and not p["explicit"]:
+            continue
+        if scope == "unused" and p["name"] not in unused:
+            continue
         if q and q not in p["name"].lower() and q not in p["desc"].lower():
             continue
+        needed = sorted(required_by.get(p["name"], []))
         hits.append({"name": p["name"], "desc": p["desc"], "size": p["size"], "explicit": p["explicit"],
-                     "protected": protected(p["name"], kernel)})
-    hits.sort(key=lambda h: (not h["name"].lower().startswith(q), not h["explicit"], h["name"]))
-    return {"ok": True, "packages": hits[:60], "total": len(hits)}
+                     "protected": protected(p["name"], kernel), "neededBy": needed[:3], "neededCount": len(needed),
+                     "optionalFor": sorted(optional_for.get(p["name"], []))[:3]})
+    hits.sort(key=lambda h: (not h["name"].lower().startswith(q), h["name"]) if q else (h["name"],))
+    limit = 400 if scope == "unused" else 80
+    return {"ok": True, "scope": scope, "packages": hits[:limit], "total": len(hits),
+            "counts": {"mine": sum(1 for p in pkgs.values() if p["explicit"]), "all": len(pkgs), "unused": len(unused)}}
 
 
 def main() -> None:
-    a = sys.argv[1:]
+    a = tasks.take_password(sys.argv[1:])
     try:
-        if len(a) == 2 and a[0] == "search":
-            emit(search(a[1]))
+        if len(a) in (2, 3) and a[0] == "search":
+            emit(search(a[1], a[2] if len(a) == 3 and a[2] in ("mine", "all", "unused") else "mine"))
         elif len(a) == 2 and a[0] in ("plan", "remove"):
             try:
                 request = json.loads(a[1])

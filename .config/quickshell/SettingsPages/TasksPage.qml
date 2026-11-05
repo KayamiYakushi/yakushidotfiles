@@ -157,6 +157,7 @@ Item {
         selected = pid
         info = null
         armed = ""
+        pendingAct = ""
         actionNote = ""
         why.command = ["python3", helper, "why", String(pid)]
         why.running = true
@@ -185,15 +186,37 @@ Item {
             return
         }
         armed = ""
+        // other users' processes and system services need your password:
+        // it is asked right here (no dialog that would open behind Settings)
+        if (info.other || (kind === "stop" && info.unit && !info.unit.user)) {
+            pendingAct = kind
+            actionNote = ""
+            passwordAsk.error = ""
+            Qt.callLater(passwordAsk.open)
+            return
+        }
+        run(kind, "")
+    }
+
+    property string pendingAct: ""     // the action waiting for your password
+    property string secret: ""
+
+    function run(kind, pw) {
         var f = info.facts
         actionNote = kind === "end" ? "Asking it to quit…" : kind === "force" ? "Stopping it…"
             : kind === "cont" ? "Letting it go on…" : "Stopping the service…"
         actionOk = true
+        secret = pw
+        action.stdinEnabled = pw !== ""
+        lastKind = kind
+        var head = ["python3", helper].concat(pw !== "" ? ["--password-stdin"] : [])
         action.command = kind === "stop"
-            ? ["python3", helper, "stop-unit", info.unit.name, info.unit.user ? "user" : "system"]
-            : ["python3", helper, kind, String(f.pid), String(f.start)]
+            ? head.concat(["stop-unit", info.unit.name, info.unit.user ? "user" : "system"])
+            : head.concat([kind, String(f.pid), String(f.start)])
         action.running = true
     }
+
+    property string lastKind: ""
 
     Timer {
         id: disarm
@@ -204,10 +227,25 @@ Item {
     Process {
         id: action
 
+        onStarted: {
+            if (stdinEnabled) {
+                action.write(page.secret + "\n")
+                page.secret = ""
+                stdinEnabled = false
+            }
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     var d = JSON.parse(text)
+                    if (d.wrongPassword) {
+                        page.pendingAct = page.lastKind
+                        page.actionNote = ""
+                        passwordAsk.error = "Wrong password. Try again."
+                        Qt.callLater(passwordAsk.open)
+                        return
+                    }
                     page.actionNote = d.message || ""
                     page.actionOk = d.ok !== false
                 } catch (e) {
@@ -439,7 +477,7 @@ Item {
             }
 
             Chip {
-                label: "REMOVED BEFORE"
+                label: "REMOVED BEFORE" + (remover.history.length ? "  " + remover.history.length : "")
                 on: page.removing && remover.view === "removed"
                 onPicked: {
                     page.removing = true
@@ -642,7 +680,13 @@ Item {
                 font.family: Theme.mono
                 font.pixelSize: 12
                 onTextChanged: page.search = text
-                Keys.onEscapePressed: text = ""
+                // Esc clears the search; on an empty one it closes Settings
+                Keys.onEscapePressed: event => {
+                    if (text !== "")
+                        text = ""
+                    else
+                        event.accepted = false
+                }
 
                 Text {
                     visible: searchInput.text === "" && !searchInput.activeFocus
@@ -948,10 +992,35 @@ Item {
                 color: Theme.line
             }
 
+            PasswordRow {
+                id: passwordAsk
+
+                visible: page.pendingAct !== ""
+                z: 3
+                anchors.left: parent.left
+                anchors.leftMargin: 20
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                anchors.verticalCenter: parent.verticalCenter
+                label: "Your password, to " + (page.pendingAct === "stop" ? "stop the service" : page.pendingAct === "cont" ? "let it go on" : "end it")
+                action: page.pendingAct === "force" ? "FORCE END" : page.pendingAct === "stop" ? "STOP" : page.pendingAct === "cont" ? "CONTINUE" : "END"
+                onAccepted: password => {
+                    var kind = page.pendingAct
+                    page.pendingAct = ""
+                    page.run(kind, password)
+                }
+                onCanceled: {
+                    page.pendingAct = ""
+                    page.actionNote = "Cancelled. Nothing was changed."
+                    page.actionOk = true
+                }
+            }
+
             // the tick: explanations on / off
             Item {
                 id: whyToggle
 
+                visible: page.pendingAct === ""
                 anchors.left: parent.left
                 anchors.leftMargin: 20
                 anchors.verticalCenter: parent.verticalCenter
@@ -1003,6 +1072,7 @@ Item {
             }
 
             Text {
+                visible: page.pendingAct === ""
                 anchors.left: whyToggle.right
                 anchors.leftMargin: 20
                 anchors.right: buttons.left
@@ -1028,6 +1098,7 @@ Item {
             Row {
                 id: buttons
 
+                visible: page.pendingAct === ""
                 anchors.right: parent.right
                 anchors.rightMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
@@ -1245,6 +1316,8 @@ Item {
     // ---- remove a package: over everything below the title
     RemovePanel {
         id: remover
+
+        hostWindow: page.hostWindow
 
         visible: page.removing
         anchors.top: rule.bottom

@@ -17,7 +17,9 @@
 
 <start> is the process start time from `stream`: if the PID now belongs to
 another process (PIDs are reused), nothing is sent. Processes of other users
-(root) are ended through pkexec, which asks for your password.
+(root) and system services need your password: add --password-stdin and give
+it on the first line of stdin (Settings does this; it goes to sudo through a
+pipe). Without it, pkexec asks.
 
 Flags: "anr" (Hyprland's "not responding" dialog is up for its window),
 "stuck" (waiting on a disk or driver for 6 s or more), "stopped" (paused),
@@ -702,6 +704,56 @@ def alive(pid: int, start: int) -> bool:
     return st is not None and st["start"] == start and st["state"] != "Z"
 
 
+# ---- running something as root ----------------------------------------------------
+# Settings asks for your password itself (a field in the page) and hands it to
+# sudo through a pipe: it is never put on a command line, never written to a
+# file and forgotten right after. Without a password, pkexec asks instead.
+PASSWORD: str | None = None
+
+
+def take_password(argv: list[str]) -> list[str]:
+    """--password-stdin: the first line of stdin is your password"""
+    global PASSWORD
+    if "--password-stdin" in argv:
+        argv = [a for a in argv if a != "--password-stdin"]
+        PASSWORD = sys.stdin.readline().rstrip("\n")
+    return argv
+
+
+def as_root(cmd: list[str], timeout: int = 120) -> tuple[str, str]:
+    """('ok' | 'wrong' | 'cancel' | 'notallowed' | 'failed', error text)"""
+    import subprocess
+    try:
+        if PASSWORD is not None:
+            res = subprocess.run(["sudo", "-S", "-k", "-p", "", "--", *cmd], input=PASSWORD + "\n",
+                                 capture_output=True, text=True, timeout=timeout)
+            err = (res.stderr or "").strip()
+            if res.returncode == 0:
+                return "ok", ""
+            if "incorrect password" in err or "Sorry, try again" in err:
+                return "wrong", ""
+            if "not in the sudoers" in err or "not allowed to" in err or "may not run sudo" in err:
+                return "notallowed", ""
+            lines = [l for l in (res.stderr + res.stdout).splitlines() if l.strip()]
+            return "failed", (lines[-1] if lines else "")
+        res = subprocess.run(["pkexec", *cmd], capture_output=True, text=True, timeout=timeout)
+        if res.returncode in (126, 127):
+            return "cancel", ""
+        lines = [l for l in (res.stderr + res.stdout).splitlines() if l.strip()]
+        return ("ok", "") if res.returncode == 0 else ("failed", lines[-1] if lines else "")
+    except FileNotFoundError as e:
+        return "failed", f"{e.filename} is not installed"
+    except subprocess.TimeoutExpired:
+        return "failed", "it took too long"
+
+
+ROOT_MESSAGES = {
+    "wrong": "Wrong password. Nothing was changed.",
+    "cancel": "Cancelled: the password was not given. Nothing was changed.",
+    "notallowed": "Your user may not use sudo, so this cannot be done from here.",
+}
+
+
 def send(pid: int, start: int, sig: int) -> str:
     """'' when sent, else why not"""
     st = stat(pid)
@@ -713,22 +765,18 @@ def send(pid: int, start: int, sig: int) -> str:
     except ProcessLookupError:
         return "gone"
     except PermissionError:
-        import subprocess
         name = signal.Signals(sig).name.removeprefix("SIG")
-        try:
-            res = subprocess.run(["pkexec", "/usr/bin/kill", "-" + name, str(pid)],
-                                 capture_output=True, text=True, timeout=120)
-        except (OSError, subprocess.TimeoutExpired):
-            return "denied"
-        return "" if res.returncode == 0 else "denied"
+        result, _ = as_root(["/usr/bin/kill", "-" + name, str(pid)])
+        return "" if result == "ok" else result
 
 
 def end(pid: int, start: int, sig: int, wait: float) -> dict:
     why_not = send(pid, start, sig)
     if why_not == "gone":
         return {"ok": True, "gone": True, "message": "It had already ended."}
-    if why_not == "denied":
-        return {"ok": False, "gone": False, "message": "Not allowed: it belongs to another user and the password was not given."}
+    if why_not:
+        return {"ok": False, "gone": False, "wrongPassword": why_not == "wrong",
+                "message": ROOT_MESSAGES.get(why_not, "Not allowed: it belongs to another user.")}
     deadline = time.monotonic() + wait
     while time.monotonic() < deadline:
         if not alive(pid, start):
@@ -749,8 +797,9 @@ def go_on(pid: int, start: int) -> dict:
     why_not = send(pid, start, signal.SIGCONT)
     if why_not == "gone":
         return {"ok": True, "gone": True, "message": "It had already ended."}
-    if why_not == "denied":
-        return {"ok": False, "gone": False, "message": "Not allowed: the password was not given."}
+    if why_not:
+        return {"ok": False, "gone": False, "wrongPassword": why_not == "wrong",
+                "message": ROOT_MESSAGES.get(why_not, "Not allowed.")}
     return {"ok": True, "gone": False, "message": "It goes on."}
 
 
@@ -758,7 +807,13 @@ def stop_unit(unit: str, user: bool) -> dict:
     import subprocess
     if not re.fullmatch(r"[\w@:.\-\\]+\.service", unit):
         return {"ok": False, "message": "Not a service name."}
-    cmd = ["systemctl"] + (["--user"] if user else []) + ["stop", unit]
+    if not user:                                 # a system service: as root
+        result, err = as_root(["systemctl", "stop", unit])
+        if result == "ok":
+            return {"ok": True, "message": f"Stopped {unit}. It may start again at the next boot or when something needs it."}
+        return {"ok": False, "wrongPassword": result == "wrong",
+                "message": ROOT_MESSAGES.get(result, err or f"Could not stop {unit}.")}
+    cmd = ["systemctl", "--user", "stop", unit]
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     except (OSError, subprocess.TimeoutExpired):
@@ -775,7 +830,7 @@ def windows_for(pid: int) -> str:
 
 # ---- commands ----------------------------------------------------------------------
 def main() -> None:
-    a = sys.argv[1:]
+    a = take_password(sys.argv[1:])
     if a == ["stream"]:
         try:
             stream()
