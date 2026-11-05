@@ -1081,7 +1081,9 @@ Item {
                           ? "Compares every program and library with the copy its package installed, to find anything swapped or patched. Takes a few minutes; nothing is changed."
                           : page.scan.redCount === 0
                             ? "Every system program and library matches its package. " + page.scan.configs
-                              + " settings files in /etc differ from their defaults, which is normal."
+                              + " settings files in /etc differ from their defaults"
+                              + (page.scan.caches ? " and " + page.scan.caches + " caches were rebuilt on this computer" : "")
+                              + ", which is normal."
                             : page.scan.redCount + " system files differ from their package. A broken update can do this too: "
                               + "reinstalling the package (sudo pacman -S <name>) puts the right copy back."
                     color: page.scan && page.scan.redCount > 0 ? Theme.ink : Theme.inkSoft

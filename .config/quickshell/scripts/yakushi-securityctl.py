@@ -470,6 +470,10 @@ def set_autolock(minutes: str) -> dict:
             else f"The screen locks after {minutes} idle minutes, and before sleep."}
 
 
+# caches that pacman hooks rebuild after installs: they never match the
+# package's copy, and that is how it should be
+REBUILT = re.compile(r"(\.cache|/plugins\.dat|/locale-archive|/gschemas\.compiled|/mime/[^/]+|/info/dir|"
+                     r"/ld\.so\.cache|/fonts\.(dir|scale)|/\.uuid)$")
 SCAN_RED = re.compile(r"^warning:\s+(\S+):\s+(/.*?)\s+\(([^()]+)\)$")
 
 
@@ -485,7 +489,7 @@ def deep_scan() -> dict:
         res = run(["pkexec", *cmd], 1800)
         if res.returncode in (126, 127):
             return {"ok": False, "message": tasks.ROOT_MESSAGES["cancel"]}
-    red, configs, other = [], 0, 0
+    red, configs, other, caches = {}, 0, 0, set()
     for line in res.stdout.splitlines():
         m = SCAN_RED.match(line.strip())
         if not m:
@@ -494,13 +498,21 @@ def deep_scan() -> dict:
         if path.startswith("/etc/") or "backup" in why.lower():
             configs += 1                    # your own settings: changes are normal
             continue
+        if REBUILT.search(path):
+            caches.add(path)                # rebuilt on this computer by a pacman hook
+            continue
         serious = re.search(r"checksum|size mismatch|symlink", why, re.I) and \
             re.match(r"^/(usr/(bin|sbin|lib|lib64|local/bin)|boot|bin|sbin|lib)", path)
         if serious:
-            red.append({"package": pkg, "path": path, "why": why})
+            if path in red:                 # one file, several reasons: one line
+                red[path]["why"] += ", " + why
+            else:
+                red[path] = {"package": pkg, "path": path, "why": why}
         else:
             other += 1
-    result = {"time": int(time.time()), "red": red[:100], "redCount": len(red), "configs": configs, "other": other}
+    red = list(red.values())
+    result = {"time": int(time.time()), "red": red[:100], "redCount": len(red), "configs": configs,
+              "caches": len(caches), "other": other}
     data = load()
     data["scan"] = result
     save(data)
