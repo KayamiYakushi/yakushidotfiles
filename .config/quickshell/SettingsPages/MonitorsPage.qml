@@ -494,7 +494,6 @@ Item {
 
         width: Math.max(64, chipLabel.implicitWidth + 26)
         height: 30
-        radius: Theme.rounded ? (8) : 0
         color: selected
             ? Theme.tint(Theme.accent, 0.16)
             : chipMouse.containsMouse ? Theme.tint(Theme.ink, 0.07) : Theme.tint(Theme.ink, 0.035)
@@ -525,7 +524,6 @@ Item {
             anchors.margins: 5
             width: 4
             height: 4
-            radius: Theme.rounded ? (2) : 0
             color: Theme.accent
         }
 
@@ -549,7 +547,6 @@ Item {
 
         width: actText.implicitWidth + 30
         height: 32
-        radius: Theme.rounded ? (8) : 0
         opacity: live ? 1 : 0.4
         color: !live
             ? "transparent"
@@ -692,7 +689,6 @@ Item {
 
                 width: parent.width
                 height: 250
-                radius: Theme.rounded ? (10) : 0
                 color: Theme.card
                 border.width: 1
                 border.color: Theme.line
@@ -747,7 +743,6 @@ Item {
                             Behavior on y { enabled: box.animate; NumberAnimation { duration: Theme.tMid; easing.type: Easing.OutCubic } }
                             Behavior on width { enabled: box.animate; NumberAnimation { duration: Theme.tMid; easing.type: Easing.OutCubic } }
                             Behavior on height { enabled: box.animate; NumberAnimation { duration: Theme.tMid; easing.type: Easing.OutCubic } }
-                            radius: Theme.rounded ? (8) : 0
                             color: selected
                                 ? Theme.tint(Theme.accent, grip.pressed ? 0.22 : 0.15)
                                 : grip.containsMouse ? Theme.tint(Theme.ink, 0.08) : Theme.tint(Theme.ink, 0.045)
@@ -768,7 +763,6 @@ Item {
                                 anchors.margins: 8
                                 width: 6
                                 height: 6
-                                radius: Theme.rounded ? (3) : 0
                                 color: Theme.accent
                             }
 
@@ -889,7 +883,6 @@ Item {
                     anchors.bottom: parent.bottom
                     width: planRow.implicitWidth + 24
                     height: 40
-                    radius: Theme.rounded ? (10) : 0
                     color: Theme.tint(Theme.surface, 0.94)
                     border.width: 1
                     border.color: Theme.tint(Theme.accent, 0.5)
@@ -956,7 +949,6 @@ Item {
 
                         width: parent.width
                         height: expanded ? 64 + 14 + details.implicitHeight + 16 : 64
-                        radius: Theme.rounded ? (10) : 0
                         color: Theme.card
                         border.width: 1
                         border.color: expanded
@@ -985,7 +977,6 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 38
                                 height: 38
-                                radius: Theme.rounded ? (10) : 0
                                 color: entry.expanded
                                     ? Theme.tint(Theme.accent, 0.16)
                                     : Theme.tint(Theme.ink, 0.05)
@@ -1061,7 +1052,6 @@ Item {
 
                                         width: pillText.implicitWidth + 16
                                         height: 22
-                                        radius: Theme.rounded ? (11) : 0
                                         color: Theme.tint(Theme.ink, 0.05)
 
                                         Text {
@@ -1257,7 +1247,6 @@ Item {
 
                                         width: 132
                                         height: 32
-                                        radius: Theme.rounded ? (8) : 0
                                         color: Theme.surface
                                         border.width: 1
                                         border.color: coord.activeFocus ? Theme.accent : Theme.lineHot
@@ -1321,7 +1310,6 @@ Item {
             Rectangle {
                 width: parent.width
                 height: tools.implicitHeight + 28
-                radius: Theme.rounded ? (10) : 0
                 color: Theme.card
                 border.width: 1
                 border.color: Theme.line

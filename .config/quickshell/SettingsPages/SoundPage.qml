@@ -67,7 +67,6 @@ Item {
 
         width: 38
         height: 38
-        radius: Theme.rounded ? 12 : 0
         color: off ? Theme.tint(Theme.alert, 0.14)
             : Theme.tint(Theme.accent, spkMouse.containsMouse ? 0.20 : 0.12)
 
@@ -127,7 +126,6 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 112
-                radius: Theme.rounded ? 14 : 0
                 color: Theme.card
                 border.width: 1
                 border.color: Theme.line
@@ -211,7 +209,6 @@ Item {
 
                         width: parent.width
                         height: 48
-                        radius: Theme.rounded ? 10 : 0
                         color: inUse ? Theme.tint(Theme.accent, 0.13)
                             : devMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
                         border.width: 1
@@ -294,7 +291,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: playerCount.implicitWidth + 12
                     height: 16
-                    radius: Theme.rounded ? 8 : 0
                     color: Theme.tint(Theme.accent, 0.14)
 
                     Text {
@@ -326,7 +322,6 @@ Item {
 
                         width: parent.width
                         height: 64
-                        radius: Theme.rounded ? 12 : 0
                         color: Theme.card
                         border.width: 1
                         border.color: quiet ? Theme.tint(Theme.alert, 0.45) : Theme.line

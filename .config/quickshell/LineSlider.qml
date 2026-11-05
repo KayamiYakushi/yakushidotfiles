@@ -23,7 +23,6 @@ Item {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         height: mouse.containsMouse || mouse.pressed ? 6 : 4
-        radius: Theme.rounded ? (height / 2) : 0
         color: Theme.tint(Theme.ink, 0.10)
 
         Behavior on height {
@@ -33,7 +32,6 @@ Item {
         Rectangle {
             width: parent.width * root.shown
             height: parent.height
-            radius: Theme.rounded ? (parent.radius) : 0
             color: root.dimmed ? Theme.inkSoft : root.tint
         }
     }
@@ -43,7 +41,6 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: mouse.containsMouse || mouse.pressed ? 14 : 10
         height: width
-        radius: Theme.rounded ? (width / 2) : 0
         color: Theme.ink
 
         Behavior on width {

@@ -371,7 +371,6 @@ Item {
             visible: entry.open
             width: parent.width
             height: visible ? details.implicitHeight + 28 : 0
-            radius: Theme.rounded ? 12 : 0
             color: Theme.card
             border.width: 1
             border.color: Theme.line
@@ -413,7 +412,6 @@ Item {
                         anchors.bottom: parent.bottom
                         width: parent.width
                         height: 4
-                        radius: Theme.rounded ? 2 : 0
                         color: Theme.groove
 
                         Rectangle {
@@ -491,7 +489,6 @@ Item {
                         anchors.right: parent.right
                         width: forgetText.implicitWidth + 26
                         height: 28
-                        radius: Theme.rounded ? 14 : 0
                         color: forgetMouse.containsMouse ? Theme.tint(Theme.alert, 0.18) : "transparent"
                         border.width: 1
                         border.color: Theme.tint(Theme.alert, 0.6)

@@ -369,7 +369,6 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 38
-        radius: Theme.rounded ? (10) : 0
         color: Theme.card
         border.width: 1
         border.color: layoutSearch.activeFocus
@@ -445,7 +444,6 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 anchors.bottomMargin: 6
-                radius: Theme.rounded ? (10) : 0
                 color: layoutRow.current
                     ? Theme.tint(Theme.accent, 0.13)
                     : rowMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
@@ -479,7 +477,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: codeText.implicitWidth + 14
                     height: 22
-                    radius: Theme.rounded ? (11) : 0
                     color: Theme.tint(Theme.ink, 0.06)
 
                     Text {
@@ -694,7 +691,6 @@ Item {
 
                     width: 112
                     height: 84
-                    radius: Theme.rounded ? 10 : 0
                     color: current ? Theme.tint(Theme.accent, 0.13)
                         : tileMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : Theme.card
                     border.width: 1
@@ -713,7 +709,6 @@ Item {
                         y: 10
                         width: 44
                         height: 44
-                        radius: Theme.rounded ? 8 : 0
                         color: "#5a5f6a"
 
                         Image {
@@ -815,7 +810,6 @@ Item {
 
                         width: 34
                         height: 24
-                        radius: Theme.rounded ? 12 : 0
                         color: current ? Theme.tint(Theme.accent, 0.16)
                             : sizeMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : Theme.card
                         border.width: 1

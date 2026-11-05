@@ -41,3 +41,4 @@ last-good/
 __pycache__/
 *.syntax-broken-*
 *.before-*
+__pycache__/

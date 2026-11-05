@@ -33,7 +33,6 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         height: 16
-        radius: Theme.corner
         color: sw.checked ? Theme.tint(Theme.accent, 0.18) : Theme.groove
         border.width: 1
         border.color: sw.checked
@@ -47,7 +46,6 @@ Item {
         Rectangle {
             width: 10
             height: 10
-            radius: Theme.rounded ? (2) : 0
             anchors.verticalCenter: parent.verticalCenter
             x: 3 + (sw.checked ? parent.width - width - 6 : 0)
             color: sw.checked ? Theme.accent : Theme.inkSoft

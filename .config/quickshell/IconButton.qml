@@ -13,7 +13,6 @@ Rectangle {
 
     width: 30
     height: 30
-    radius: Theme.corner
     opacity: available ? 1 : 0.4
     color: mouse.containsMouse && available ? Theme.tint(Theme.accent, 0.10) : "transparent"
     border.width: 1

@@ -142,7 +142,6 @@ Rectangle {
     Component.onCompleted: run(["details", uuid])
 
     implicitHeight: body.implicitHeight + 28
-    radius: Theme.rounded ? 12 : 0
     color: Theme.card
     border.width: 1
     border.color: Theme.line
@@ -189,7 +188,6 @@ Rectangle {
 
         width: chipText.implicitWidth + 20
         height: 24
-        radius: Theme.rounded ? 12 : 0
         color: on ? Theme.tint(Theme.accent, 0.16)
             : chipMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : "transparent"
         border.width: 1
@@ -225,7 +223,6 @@ Rectangle {
         signal accepted()
 
         height: 30
-        radius: Theme.rounded ? 8 : 0
         color: Theme.tint(Theme.ink, 0.03)
         border.width: 1
         border.color: input.activeFocus ? Theme.accent : Theme.line
@@ -269,7 +266,6 @@ Rectangle {
 
         width: actText.implicitWidth + 26
         height: 28
-        radius: Theme.rounded ? 14 : 0
         opacity: on ? 1 : 0.4
         color: danger ? (actMouse.containsMouse && on ? Theme.tint(Theme.alert, 0.18) : "transparent")
             : Theme.tint(Theme.accent, actMouse.containsMouse && on ? 0.28 : 0.14)

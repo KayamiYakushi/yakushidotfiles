@@ -9,9 +9,11 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
 
 ## Features
 
-- **Settings** (`SUPER + I`) — sharp or rounded style, accent colours, window gaps / corners /
-  shadow / border, top bar, login screen, keybinds, default apps, input, sound, monitors,
-  network and Bluetooth. Every change applies instantly.
+- **Settings** (`SUPER + I`) — accent colours, window gaps / corners / shadow / border, top
+  bar, login screen, keybinds, default apps, input, sound, monitors, network, Bluetooth and
+  tasks. Every change applies instantly.
+  Move it by its title strip or with `SUPER + left drag`, resize it by its edges or with
+  `SUPER + right drag`; it always opens at its default size in the middle.
 - **Island top bar** — workspaces, RAM, CPU, temperatures, now playing (with a drop-down player
   and visualizer), volume, date, time and a power menu. Modules can be toggled and reordered.
   A plain **Waybar** style in the same look is one click away.
@@ -22,6 +24,18 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
 - **Cursor picker** — Input lists every installed cursor theme with a preview, sets the size
   and can grow the cursor when you shake the mouse. Our own cursor, Yakushi Red, comes
   with it, white edged or black edged (Yakushi Red Dark).
+- **Tasks** (`SUPER + Esc`) — what runs on your computer, live: CPU, memory and every process,
+  and for each one, in plain words, why it runs — which package it comes from, whether you
+  installed that package or which program brought it in, and who started it (a service,
+  Hyprland at login, a shortcut, D-Bus). Apps that stop answering are flagged (NOT
+  RESPONDING, STUCK, PAUSED) and can be ended right there: END asks politely, FORCE END
+  stops them at once, services can be stopped. **REMOVE A PACKAGE** takes a program off
+  without a trace: it shows first what goes (the package, dependencies nothing else needs,
+  its services, its files in your home folder), asks for your password once, and keeps your
+  files in a trash so **UNDO** can put everything back. The base system, kernels and what
+  Yakushi runs on are protected.
+  If the bar or Settings ever freezes,
+  `SUPER + CTRL + Esc` restarts them without touching your windows.
 - **Network** — Ethernet and Wi-Fi in one page: the connection in use with its live traffic,
   a speed test (with the average of the last tests), and per connection DNS (automatic,
   Cloudflare, Google, Quad9, AdGuard or your own), automatic or manual IP and auto-connect.

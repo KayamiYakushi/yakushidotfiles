@@ -1,8 +1,7 @@
 import QtQuick
 
-// Page heading used at the top of each Settings page.
-//  sharp:   an accent block, the title in heavy caps and a hard rule
-//  rounded: the plain spaced title of the rounded style
+// Page heading used at the top of each Settings page: an accent block, the
+// title in heavy caps and a hard rule.
 Item {
     id: heading
 
@@ -10,23 +9,10 @@ Item {
 
     implicitHeight: 26
 
-    // rounded style
-    Text {
-        visible: Theme.rounded
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        text: heading.title
-        color: Theme.ink
-        font.family: Theme.mono
-        font.pixelSize: 18
-        font.letterSpacing: 3
-    }
-
-    // sharp style
+    // accent block, title, rule
     Rectangle {
         id: block
 
-        visible: !Theme.rounded
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         width: 6
@@ -37,7 +23,6 @@ Item {
     Text {
         id: label
 
-        visible: !Theme.rounded
         anchors.left: block.right
         anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
@@ -52,7 +37,6 @@ Item {
     Text {
         id: slashes
 
-        visible: !Theme.rounded
         anchors.left: label.right
         anchors.leftMargin: 14
         anchors.verticalCenter: parent.verticalCenter
@@ -63,7 +47,6 @@ Item {
     }
 
     Rectangle {
-        visible: !Theme.rounded
         anchors.left: slashes.right
         anchors.leftMargin: 10
         anchors.right: parent.right

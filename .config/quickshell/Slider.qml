@@ -65,7 +65,6 @@ Item {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             height: 4
-            radius: Theme.rounded ? 2 : 0
             color: Theme.groove
             border.width: 1
             border.color: Theme.line
@@ -93,7 +92,6 @@ Item {
             y: level.y - 2
             width: level.width + 4
             height: level.height + 4
-            radius: Theme.rounded ? 4 : 0
             color: "transparent"
             border.width: 2
             border.color: Theme.tint(slider.tint, 0.35)
@@ -106,7 +104,6 @@ Item {
             anchors.verticalCenter: groove.verticalCenter
             width: 12
             height: 12
-            radius: Theme.rounded ? 6 : 0
             color: Theme.ink
             border.width: 2
             border.color: slider.tint

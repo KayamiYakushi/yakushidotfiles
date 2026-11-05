@@ -20,7 +20,6 @@ Rectangle {
     signal settings()
 
     height: 60
-    radius: Theme.rounded ? 12 : 0
     color: active ? Theme.tint(Theme.accent, 0.12)
         : over.hovered ? Theme.tint(Theme.ink, 0.05) : Theme.card
     border.width: 1
@@ -41,7 +40,6 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         height: 36
-        radius: Theme.rounded ? 10 : 0
         color: row.active ? Theme.tint(Theme.accent, 0.18) : Theme.tint(Theme.ink, 0.05)
 
         Text {
@@ -95,7 +93,6 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: 28
             height: 28
-            radius: Theme.rounded ? 14 : 0
             color: row.open ? Theme.tint(Theme.accent, 0.18)
                 : gearMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : "transparent"
             border.width: 1
@@ -124,7 +121,6 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: label.implicitWidth + 24
             height: 28
-            radius: Theme.rounded ? 14 : 0
             opacity: row.busy ? 0.6 : 1
             color: row.danger
                 ? (press.containsMouse ? Theme.tint(Theme.alert, 0.18) : "transparent")

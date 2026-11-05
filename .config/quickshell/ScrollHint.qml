@@ -11,7 +11,6 @@ Rectangle {
         flick.contentY / Math.max(1, flick.contentHeight - flick.height)))
     width: 2
     height: Math.max(24, flick.height * flick.height / Math.max(1, flick.contentHeight))
-    radius: Theme.rounded ? (1) : 0
     color: Theme.tint(Theme.ink, flick.moving ? 0.45 : 0.18)
 
     Behavior on color {

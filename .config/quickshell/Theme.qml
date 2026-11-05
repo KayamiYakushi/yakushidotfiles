@@ -6,6 +6,8 @@ import QtQuick
 QtObject {
     // ---- surfaces
     property real glass: 0.8                       // Settings panel opacity (Appearance)
+    property int settingsWidth: 0                  // Settings card size while it is open (0 = default;
+    property int settingsHeight: 0                 // never saved: it always opens at the default)
     property color backdrop: Qt.rgba(0, 0, 0, glass)
     readonly property color surface: "#060606"
     readonly property color card: "#0e0e0e"
@@ -27,11 +29,6 @@ QtObject {
     // ---- type
     readonly property string mono: "JetBrainsMono Nerd Font"
     property string glyphs: "JetBrainsMono Nerd Font"
-
-    // ---- shape: sharp (false) or rounded (true), Appearance -> Style
-    property bool rounded: false
-    readonly property int corner: rounded ? 6 : 0
-    readonly property int cornerLarge: rounded ? 12 : 0
 
     // ---- motion (ms)
     readonly property int tFast: 120

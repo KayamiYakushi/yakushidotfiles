@@ -8,7 +8,8 @@ ShellRoot {
     SettingsWindow {
         id: settingsWindow
 
-        Component.onCompleted: show()
+        // toggle-settings.sh tasks -> opens on Tasks
+        Component.onCompleted: show(Quickshell.env("YAKUSHI_SETTINGS_PAGE") || "")
 
         onDismissed: quitTimer.restart()
     }
@@ -18,6 +19,10 @@ ShellRoot {
 
         function hide(): void {
             settingsWindow.hide()
+        }
+
+        function open(name: string): void {
+            settingsWindow.show(name)
         }
 
         function toggle(): void {

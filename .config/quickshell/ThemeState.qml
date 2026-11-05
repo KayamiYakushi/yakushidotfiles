@@ -32,9 +32,6 @@ Item {
         if (typeof data.panelOpacity === "number")
             Theme.glass = Math.max(0.40, Math.min(1.0, data.panelOpacity))
 
-        if (data.style === "rounded" || data.style === "sharp")
-            Theme.rounded = data.style === "rounded"
-
         if (typeof data.accent === "string" && /^#[0-9a-fA-F]{6}$/.test(data.accent)) {
             // A saved "Blaze" accent (#ff5a1f) from an earlier build is plain Red again.
             Theme.accent = data.accent.toLowerCase() === "#ff5a1f" ? "#ff003c" : data.accent
@@ -61,33 +58,12 @@ Item {
         dirty = false
         saveProc.command = [
             "sh", "-c",
-            "exec python3 \"" + helper + "\" set \"$1\" \"$2\" \"$3\"",
+            "exec python3 \"" + helper + "\" set \"$1\" \"$2\"",
             "yakushi-uistate",
             Theme.glass.toFixed(3),
-            hexOf(Theme.accent),
-            Theme.rounded ? "rounded" : "sharp"
+            hexOf(Theme.accent)
         ]
         saveProc.running = true
-    }
-
-    // The style is read synchronously before the first frame (no flash of
-    // the other look); the rest arrives from the helper a moment later.
-    FileView {
-        path: (Quickshell.env("HOME") || "") + "/.config/quickshell/yakushi-ui.local.json"
-        blockLoading: true
-        printErrors: false
-
-        onLoaded: {
-            try {
-                var d = JSON.parse(text())
-                if (d.style === "rounded" || d.style === "sharp") {
-                    state.applying = true
-                    Theme.rounded = d.style === "rounded"
-                    state.applying = false
-                }
-            } catch (e) {
-            }
-        }
     }
 
     Component.onCompleted: {
@@ -109,9 +85,6 @@ Item {
             state.schedule()
         }
 
-        function onRoundedChanged() {
-            state.schedule()
-        }
     }
 
     Timer {

@@ -10,7 +10,6 @@ Rectangle {
 
     width: hbRow.implicitWidth + 24
     height: 30
-    radius: Theme.corner
     color: hbMouse.containsMouse ? Theme.tint(Theme.accent, 0.10) : "transparent"
     border.width: 1
     border.color: hbMouse.containsMouse ? Theme.tint(Theme.accent, 0.6) : Theme.line

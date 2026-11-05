@@ -425,7 +425,6 @@ Item {
 
                 width: rows.width
                 height: 118
-                radius: Theme.rounded ? 12 : 0
                 color: Theme.card
                 border.width: 1
                 border.color: page.primary ? Theme.tint(Theme.accent, 0.5) : Theme.line
@@ -447,7 +446,6 @@ Item {
 
                         width: 40
                         height: 40
-                        radius: Theme.rounded ? 10 : 0
                         color: page.primary ? Theme.tint(Theme.accent, 0.18) : Theme.tint(Theme.ink, 0.05)
 
                         Text {
@@ -567,7 +565,6 @@ Item {
                         anchors.bottom: parent.bottom
                         width: testText.implicitWidth + 24
                         height: 28
-                        radius: Theme.rounded ? 14 : 0
                         opacity: page.primary && !page.testing ? 1 : 0.5
                         color: Theme.tint(Theme.accent, testMouse.containsMouse && !page.testing ? 0.26 : 0.12)
                         border.width: 1
@@ -602,7 +599,6 @@ Item {
                 visible: !status.wide
                 width: rows.width
                 height: 44
-                radius: Theme.rounded ? 12 : 0
                 color: Theme.card
                 border.width: 1
                 border.color: Theme.line
@@ -630,7 +626,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: narrowText.implicitWidth + 24
                     height: 28
-                    radius: Theme.rounded ? 14 : 0
                     opacity: page.primary && !page.testing ? 1 : 0.5
                     color: Theme.tint(Theme.accent, 0.12)
                     border.width: 1
@@ -806,7 +801,6 @@ Item {
                         visible: entry.asked
                         width: parent.width
                         height: 44
-                        radius: Theme.rounded ? 12 : 0
                         color: Theme.card
                         border.width: 1
                         border.color: secret.activeFocus ? Theme.accent : Theme.line
@@ -863,7 +857,6 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             width: joinText.implicitWidth + 24
                             height: 28
-                            radius: Theme.rounded ? 14 : 0
                             color: Theme.tint(Theme.accent, joinMouse.containsMouse ? 0.28 : 0.16)
                             border.width: 1
                             border.color: Theme.accent

@@ -175,7 +175,6 @@ Item {
         Rectangle {
             width: parent.width
             height: 290
-            radius: Theme.corner
             color: "#080808"
             border.width: 1
             border.color: Theme.line
@@ -237,7 +236,6 @@ Item {
             Rectangle {
                 width: 200
                 height: 38
-                radius: Theme.corner
                 color: Theme.tint(Theme.accent, 0.10)
                 border.width: 1
                 border.color: Theme.accent
@@ -262,7 +260,6 @@ Item {
             Rectangle {
                 width: 100
                 height: 38
-                radius: Theme.corner
                 color: "transparent"
                 border.width: 1
                 border.color: Theme.line

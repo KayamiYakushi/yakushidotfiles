@@ -181,7 +181,7 @@ Item {
             id: body
 
             width: flick.width
-            spacing: Theme.rounded ? 8 : -1
+            spacing: -1
 
             // Terminal first, then the login shell, then the rest.
             Repeater {
@@ -213,10 +213,9 @@ Item {
 
                     width: body.width
                     height: head.height + (open ? chips.height + 14 : 0)
-                    radius: Theme.rounded ? 12 : 0
                     color: open ? Theme.tint(Theme.accent, 0.05) : Theme.card
                     border.width: 1
-                    border.color: open ? Theme.tint(Theme.accent, 0.55) : Theme.tint(Theme.ink, Theme.rounded ? 0.06 : 0.12)
+                    border.color: open ? Theme.tint(Theme.accent, 0.55) : Theme.tint(Theme.ink, 0.12)
                     clip: true
                     z: open ? 1 : 0
 
@@ -237,7 +236,6 @@ Item {
                             anchors.left: parent.left
                             anchors.leftMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
-                            visible: !Theme.rounded
                             text: page.two(block.index + 1)
                             color: block.open ? Theme.accent : Theme.inkSoft
                             font.family: Theme.mono
@@ -248,8 +246,8 @@ Item {
                         Text {
                             id: catGlyph
 
-                            anchors.left: Theme.rounded ? parent.left : idx.right
-                            anchors.leftMargin: Theme.rounded ? 18 : 14
+                            anchors.left: idx.right
+                            anchors.leftMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
                             width: 18
                             text: page.glyph(block.modelData.key)
@@ -262,12 +260,12 @@ Item {
                             anchors.left: catGlyph.right
                             anchors.leftMargin: 12
                             anchors.verticalCenter: parent.verticalCenter
-                            text: Theme.rounded ? block.modelData.label : block.modelData.label.toUpperCase()
+                            text: block.modelData.label.toUpperCase()
                             color: Theme.ink
                             font.family: Theme.mono
                             font.pixelSize: 12
-                            font.bold: !Theme.rounded
-                            font.letterSpacing: Theme.rounded ? 0.5 : 2
+                            font.bold: true
+                            font.letterSpacing: 2
                         }
 
                         Text {
@@ -352,7 +350,6 @@ Item {
 
                                 width: chipRow.implicitWidth + 24
                                 height: 36
-                                radius: Theme.corner
                                 color: selected
                                     ? Theme.tint(Theme.accent, 0.16)
                                     : chipMouse.containsMouse ? Theme.tint(Theme.ink, 0.06) : Theme.tint(Theme.ink, 0.02)

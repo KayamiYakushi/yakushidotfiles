@@ -24,6 +24,22 @@ local function yakushi_bind(id, keys, action, options)
     end
 end
 
+-- While Yakushi Settings is open, SUPER + mouse goes to it (to move or
+-- resize the Settings card) instead of moving / resizing the window under it.
+local function over_settings_or(action)
+    return function()
+        local ok, layers = pcall(hl.get_layers, { namespace = "yakushi-settings" })
+        if ok and type(layers) == "table" and #layers > 0 then
+            return { pass_event = true }
+        end
+        -- dispatcher objects run through hl.dispatch (older builds: called directly)
+        if hl.dispatch then
+            return hl.dispatch(action)
+        end
+        return action()
+    end
+end
+
 -- Second press closes an open rofi instead of opening another one.
 local function toggle_rofi(cmd)
     return "pgrep -x rofi >/dev/null && pkill -x rofi || " .. cmd
@@ -87,9 +103,9 @@ yakushi_bind("float", "SUPER + SHIFT + V", float_centered)
 -- YAKUSHI_BIND opacity|Windows|Window Opacity
 yakushi_bind("opacity", "SUPER + O", hl.dsp.exec_cmd(HOME .. "/.config/hypr/scripts/opacity.sh"))
 -- YAKUSHI_BIND mouse_move|Windows|Move Window With Mouse
-yakushi_bind("mouse_move", "SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true })
+yakushi_bind("mouse_move", "SUPER + mouse:272", over_settings_or(hl.dsp.window.drag()), { mouse = true })
 -- YAKUSHI_BIND mouse_resize|Windows|Resize Window With Mouse
-yakushi_bind("mouse_resize", "SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true })
+yakushi_bind("mouse_resize", "SUPER + mouse:273", over_settings_or(hl.dsp.window.resize()), { mouse = true })
 -- YAKUSHI_BIND move_left|Windows|Move Window Left
 yakushi_bind("move_left", "SUPER + SHIFT + H", hl.dsp.window.move({ direction = "left" }))
 -- YAKUSHI_BIND move_down|Windows|Move Window Down
@@ -168,6 +184,10 @@ yakushi_bind("power", "SUPER + GRAVE", hl.dsp.exec_cmd("$HOME/.config/rofi/scrip
 yakushi_bind("exit", "SUPER + SHIFT + E", hl.dsp.exit())
 -- YAKUSHI_BIND waybar|System|Toggle Top Bar
 yakushi_bind("waybar", "SUPER + SHIFT + W", hl.dsp.exec_cmd("sh ~/.config/quickshell/scripts/yakushi-bar.sh toggle"))
+-- YAKUSHI_BIND tasks|System|Tasks (what runs, and why)
+yakushi_bind("tasks", "SUPER + Escape", hl.dsp.exec_cmd("~/.config/quickshell/scripts/toggle-settings.sh tasks"))
+-- YAKUSHI_BIND unfreeze|System|Restart Frozen Bar / Settings|danger
+yakushi_bind("unfreeze", "SUPER + CTRL + Escape", hl.dsp.exec_cmd("sh ~/.config/quickshell/scripts/yakushi-unfreeze.sh"))
 
 -- Tools ---------------------------------------------------------------------
 -- YAKUSHI_BIND clipboard|Utilities|Clipboard History

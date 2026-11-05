@@ -4,9 +4,8 @@ import QtQuick
 import "SettingsPages"
 
 // The Settings panel (SUPER + I): a card in the middle of the screen with
-// the page list on the left and the chosen page on the right. Two looks,
-// picked in Appearance -> Style: sharp (header strip, numbered list) and
-// rounded (floating side menu). The card leans toward the pointer
+// the page list on the left and the chosen page on the right: a header strip
+// and a numbered page list. The card leans toward the pointer
 // (TiltCard). Clicking outside the card or Esc closes it.
 PanelWindow {
     id: settings
@@ -24,9 +23,23 @@ PanelWindow {
     function beginExternalDialog() { dialogs += 1 }
     function endExternalDialog() { dialogs = Math.max(0, dialogs - 1) }
 
-    function show() {
-        page = 0
+    // show(), or show("Tasks") to open on that page
+    function show(start) {
+        page = Math.max(0, pageIndex(start || ""))
+        // always opens at its default size, in the middle
+        Theme.settingsWidth = 0
+        Theme.settingsHeight = 0
+        card.offsetX = 0
+        card.offsetY = 0
         showing = true
+    }
+
+    function pageIndex(name) {
+        var n = String(name).toLowerCase()
+        for (var i = 0; i < pages.length; i++)
+            if (pages[i].name.toLowerCase() === n || pages[i].file.toLowerCase() === n + "page")
+                return i
+        return -1
     }
 
     function hide() {
@@ -62,6 +75,9 @@ PanelWindow {
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
 
+    // hyprland keybinds.lua looks for this name: while Settings is open,
+    // SUPER + mouse goes to Settings instead of moving / resizing windows
+    WlrLayershell.namespace: "yakushi-settings"
     WlrLayershell.layer: stepAside ? WlrLayer.Bottom : WlrLayer.Overlay
     WlrLayershell.keyboardFocus: showing && !stepAside ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
@@ -76,6 +92,7 @@ PanelWindow {
 
     readonly property var pages: [
         { name: "System",       jp: "システム",       file: "SystemPage",      glyph: "󰒓" },
+        { name: "Tasks",        jp: "タスク",         file: "TasksPage",       glyph: String.fromCodePoint(0xF04C5) },
         { name: "Appearance",   jp: "外観",           file: "AppearancePage",  glyph: "󰏘" },
         { name: "Top Bar",      jp: "トップバー",     file: "TopBarPage",      glyph: String.fromCodePoint(0xF1513) },
         { name: "Login Screen", jp: "ログイン画面",   file: "LoginScreenPage", glyph: "󰌾" },
@@ -97,7 +114,7 @@ PanelWindow {
     readonly property color onAccent: 0.299 * Theme.accent.r + 0.587 * Theme.accent.g + 0.114 * Theme.accent.b > 0.55
         ? "#0a0a0a" : "#f5f5f5"
 
-    // L-shaped accent mark at a corner of the sharp card
+    // L-shaped accent mark at a corner of the card
     component CornerMark: Item {
         property bool atRight: false
         property bool atBottom: false
@@ -133,7 +150,12 @@ PanelWindow {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: settings.hide()
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            // SUPER + click (a slip while moving the card) does not close it
+            onClicked: mouse => {
+                if (!(mouse.modifiers & Qt.MetaModifier))
+                    settings.hide()
+            }
         }
     }
 
@@ -144,13 +166,173 @@ PanelWindow {
         id: card
 
         anchors.centerIn: parent
-        width: Math.min(1020, settings.width - 80)
-        height: Math.min(660, settings.height - 80)
+        anchors.horizontalCenterOffset: offsetX
+        anchors.verticalCenterOffset: offsetY
+
+        // Move: drag the header strip, or SUPER + left drag anywhere on it.
+        // Resize: drag an edge or a corner, or SUPER + right drag (the side
+        // you grab follows the pointer, the opposite one stays). Double-click
+        // an edge for the default size. Nothing is saved: it always opens at
+        // the default size, in the middle.
+        property real offsetX: 0
+        property real offsetY: 0
+        readonly property int minW: Math.min(860, settings.width - 40)
+        readonly property int minH: Math.min(560, settings.height - 40)
+        width: Math.max(minW, Math.min(Theme.settingsWidth > 0 ? Theme.settingsWidth : 1020, settings.width - 40))
+        height: Math.max(minH, Math.min(Theme.settingsHeight > 0 ? Theme.settingsHeight : 660, settings.height - 40))
+        still: resizer.active || resizer.hovering > 0
         shown: settings.showing
 
         // clicks on the card stay on the card
         MouseArea {
             anchors.fill: parent
+        }
+
+        // ---- moving and resizing
+        Item {
+            id: resizer
+
+            property bool active: false
+            property int hovering: 0             // handles under the pointer: the card stops leaning
+            property string mode: ""             // move | resize
+            property int sx: 0                   // which sides follow the pointer (-1 / 0 / 1)
+            property int sy: 0
+            property real startW: 0
+            property real startH: 0
+            property real startX: 0
+            property real startY: 0
+            property point startAt: Qt.point(0, 0)
+
+            anchors.fill: parent
+            z: 20
+
+            function begin(area, mouse, how, sideX, sideY) {
+                startAt = area.mapToItem(null, mouse.x, mouse.y)
+                startW = card.width
+                startH = card.height
+                startX = card.offsetX
+                startY = card.offsetY
+                mode = how
+                sx = sideX
+                sy = sideY
+                active = true
+            }
+
+            // keep the card (mostly) on the screen
+            function clampOffsets() {
+                var maxX = Math.max(0, (settings.width - card.width) / 2 + card.width / 2 - 80)
+                var maxY = Math.max(0, (settings.height - card.height) / 2 + card.height / 2 - 60)
+                card.offsetX = Math.max(-maxX, Math.min(maxX, card.offsetX))
+                card.offsetY = Math.max(-maxY, Math.min(maxY, card.offsetY))
+            }
+
+            function drag(area, mouse) {
+                if (!active)
+                    return
+                var p = area.mapToItem(null, mouse.x, mouse.y)
+                var dx = p.x - startAt.x
+                var dy = p.y - startAt.y
+                if (mode === "move") {
+                    card.offsetX = startX + dx
+                    card.offsetY = startY + dy
+                } else {
+                    if (sx !== 0) {
+                        var w = Math.round(Math.max(card.minW, Math.min(settings.width - 40, startW + sx * dx)))
+                        Theme.settingsWidth = w
+                        card.offsetX = startX + sx * (w - startW) / 2
+                    }
+                    if (sy !== 0) {
+                        var h = Math.round(Math.max(card.minH, Math.min(settings.height - 40, startH + sy * dy)))
+                        Theme.settingsHeight = h
+                        card.offsetY = startY + sy * (h - startH) / 2
+                    }
+                }
+                clampOffsets()
+            }
+
+            function finish() {
+                active = false
+                mode = ""
+            }
+
+            function reset() {
+                Theme.settingsWidth = 0
+                Theme.settingsHeight = 0
+            }
+
+            // SUPER + left drag moves, SUPER + right drag resizes; anything
+            // else goes through to the page underneath
+            MouseArea {
+                id: gesture
+
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                preventStealing: true
+                // no cursorShape here: it would hide the hand cursor of every button
+                onPressed: mouse => {
+                    if (!(mouse.modifiers & Qt.MetaModifier)) {
+                        mouse.accepted = false
+                        return
+                    }
+                    if (mouse.button === Qt.RightButton)
+                        resizer.begin(gesture, mouse, "resize",
+                                      mouse.x < width / 2 ? -1 : 1, mouse.y < height / 2 ? -1 : 1)
+                    else
+                        resizer.begin(gesture, mouse, "move", 0, 0)
+                }
+                onPositionChanged: mouse => resizer.drag(gesture, mouse)
+                onReleased: resizer.finish()
+                onCanceled: resizer.finish()
+            }
+
+            // the header strip moves the card with a plain left drag
+            MouseArea {
+                id: handle
+
+                width: parent.width
+                height: 46
+                cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                preventStealing: true
+                onPressed: mouse => resizer.begin(handle, mouse, "move", 0, 0)
+                onPositionChanged: mouse => resizer.drag(handle, mouse)
+                onReleased: resizer.finish()
+                onCanceled: resizer.finish()
+                onDoubleClicked: {
+                    card.offsetX = 0
+                    card.offsetY = 0
+                }
+            }
+
+            // edges and corners, a few pixels wide
+            Repeater {
+                // [x side, y side]: -1 left/top, 1 right/bottom, 0 none
+                model: [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+
+                delegate: MouseArea {
+                    id: grab
+
+                    required property var modelData
+                    readonly property int gx: modelData[0]
+                    readonly property int gy: modelData[1]
+                    readonly property int grip: 8
+
+                    x: gx < 0 ? -grip / 2 : gx > 0 ? resizer.width - grip / 2 : grip
+                    y: gy < 0 ? -grip / 2 : gy > 0 ? resizer.height - grip / 2 : grip
+                    width: gx !== 0 ? grip : resizer.width - 2 * grip
+                    height: gy !== 0 ? grip : resizer.height - 2 * grip
+                    z: gx !== 0 && gy !== 0 ? 2 : 1
+                    hoverEnabled: true
+                    preventStealing: true
+                    cursorShape: gx !== 0 && gy !== 0 ? (gx === gy ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor)
+                        : gx !== 0 ? Qt.SizeHorCursor : Qt.SizeVerCursor
+                    onPressed: mouse => resizer.begin(grab, mouse, "resize", grab.gx, grab.gy)
+                    onPositionChanged: mouse => resizer.drag(grab, mouse)
+                    onReleased: resizer.finish()
+                    onCanceled: resizer.finish()
+                    onDoubleClicked: resizer.reset()
+                    onContainsMouseChanged: resizer.hovering = Math.max(0, resizer.hovering + (containsMouse ? 1 : -1))
+                }
+            }
         }
 
         // petals drift over the card with the Sakura accent only
@@ -166,20 +348,18 @@ PanelWindow {
 
             anchors.fill: parent
             color: Theme.backdrop
-            radius: Theme.rounded ? 18 : 0
             border.width: 1
-            border.color: Theme.rounded ? Theme.tint(Theme.accent, 0.35) : Theme.tint(Theme.ink, 0.12)
+            border.color: Theme.tint(Theme.ink, 0.12)
 
-            CornerMark { visible: !Theme.rounded; x: -4; y: -4 }
-            CornerMark { visible: !Theme.rounded; x: frame.width - width + 4; y: -4; atRight: true }
-            CornerMark { visible: !Theme.rounded; x: -4; y: frame.height - height + 4; atBottom: true }
-            CornerMark { visible: !Theme.rounded; x: frame.width - width + 4; y: frame.height - height + 4; atRight: true; atBottom: true }
+            CornerMark { x: -4; y: -4 }
+            CornerMark { x: frame.width - width + 4; y: -4; atRight: true }
+            CornerMark { x: -4; y: frame.height - height + 4; atBottom: true }
+            CornerMark { x: frame.width - width + 4; y: frame.height - height + 4; atRight: true; atBottom: true }
 
-            // ============ sharp: header strip ============
+            // ============ header strip ============
             Item {
                 id: strip
 
-                visible: !Theme.rounded
                 width: parent.width
                 height: 46
 
@@ -258,11 +438,10 @@ PanelWindow {
                 }
             }
 
-            // ============ sharp: numbered list ============
+            // ============ numbered page list ============
             Item {
                 id: list
 
-                visible: !Theme.rounded
                 y: strip.height
                 width: 256
                 height: parent.height - strip.height
@@ -390,137 +569,12 @@ PanelWindow {
                 }
             }
 
-            // ============ rounded: floating side menu ============
-            Rectangle {
-                id: menu
-
-                visible: Theme.rounded
-                x: 16
-                y: 16
-                width: 252
-                height: parent.height - 32
-                radius: 14
-                color: Theme.tint(Theme.ink, 0.025)
-                border.width: 1
-                border.color: Theme.tint(Theme.ink, 0.04)
-
-                Row {
-                    x: 18
-                    y: 18
-                    spacing: 12
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "薬"
-                        color: Theme.alert
-                        font.family: "Noto Sans CJK JP"
-                        font.pixelSize: 28
-                        font.bold: true
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "SETTINGS"
-                        color: Theme.ink
-                        font.family: Theme.mono
-                        font.pixelSize: 15
-                        font.bold: true
-                        font.letterSpacing: 4
-                    }
-                }
-
-                Column {
-                    x: 12
-                    y: 70
-                    width: parent.width - 24
-                    spacing: 3
-
-                    Repeater {
-                        model: settings.pages
-
-                        delegate: Rectangle {
-                            id: pill
-
-                            required property var modelData
-                            required property int index
-                            readonly property bool here: settings.page === index
-
-                            width: parent.width
-                            height: 38
-                            radius: 10
-                            color: here ? Theme.tint(Theme.accent, 0.14)
-                                : pillMouse.containsMouse ? Theme.tint(Theme.ink, 0.05) : "transparent"
-                            border.width: here ? 1 : 0
-                            border.color: Theme.tint(Theme.accent, 0.45)
-
-                            Behavior on color {
-                                ColorAnimation { duration: Theme.tFast }
-                            }
-
-                            Text {
-                                id: pillGlyph
-
-                                x: 12
-                                width: 18
-                                anchors.verticalCenter: parent.verticalCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                text: pill.modelData.glyph
-                                color: pill.here ? Theme.accent : Theme.inkSoft
-                                font.family: Theme.glyphs
-                                font.pixelSize: 14
-                            }
-
-                            Text {
-                                anchors.left: pillGlyph.right
-                                anchors.leftMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: pill.modelData.name
-                                color: pill.here || pillMouse.containsMouse ? Theme.ink : Theme.inkSoft
-                                font.family: Theme.mono
-                                font.pixelSize: 12
-                            }
-
-                            Text {
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: pill.modelData.jp
-                                color: pill.here ? Theme.tint(Theme.accent, 0.85) : Theme.inkMute
-                                font.family: "Noto Sans CJK JP"
-                                font.pixelSize: 10
-                                font.letterSpacing: 1
-                            }
-
-                            MouseArea {
-                                id: pillMouse
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: settings.page = pill.index
-                            }
-                        }
-                    }
-                }
-
-                Text {
-                    x: 18
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 18
-                    text: "ESC  ·  close"
-                    color: Theme.inkMute
-                    font.family: Theme.mono
-                    font.pixelSize: 9
-                    font.letterSpacing: 1
-                }
-            }
-
             // ============ the page ============
             Item {
-                x: Theme.rounded ? menu.x + menu.width + 24 : list.width + 28
-                y: Theme.rounded ? 28 : strip.height + 20
-                width: parent.width - x - (Theme.rounded ? 16 : 0)
-                height: parent.height - y - (Theme.rounded ? 22 : 16)
+                x: list.width + 28
+                y: strip.height + 20
+                width: parent.width - x
+                height: parent.height - y - 16
                 clip: true
 
                 Loader {

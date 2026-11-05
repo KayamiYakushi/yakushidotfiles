@@ -69,7 +69,6 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 36
         height: 16
-        radius: Theme.corner
         color: row.checked ? Theme.tint(Theme.accent, 0.18) : Theme.groove
         border.width: 1
         border.color: row.checked
@@ -87,7 +86,6 @@ Item {
         Rectangle {
             width: 10
             height: 10
-            radius: Theme.rounded ? (2) : 0
             anchors.verticalCenter: parent.verticalCenter
             x: row.checked ? parent.width - width - 3 : 3
             color: row.checked ? Theme.accent : Theme.inkSoft

@@ -244,7 +244,6 @@ Item {
 
                         width: (body.width - 12) / 2
                         height: 76
-                        radius: Theme.corner
                         color: Theme.card
                         border.width: 1
                         border.color: selected
@@ -267,7 +266,6 @@ Item {
 
                             Rectangle {
                                 anchors.fill: parent
-                                radius: Theme.rounded ? (2) : 0
                                 color: Theme.groove
                             }
 
@@ -296,7 +294,6 @@ Item {
                                     Rectangle {
                                         width: preview.width * 0.24 - 2
                                         height: 8
-                                        radius: Theme.rounded ? (3) : 0
                                         color: card.selected ? Theme.accent : Theme.inkMute
                                     }
                                 }
@@ -445,7 +442,6 @@ Item {
 
                                 width: 20
                                 height: 20
-                                radius: Theme.corner
                                 color: arrowMouse.containsMouse && usable
                                     ? Theme.tint(Theme.accent, 0.14)
                                     : "transparent"
@@ -533,7 +529,6 @@ Item {
 
                             width: segText.implicitWidth + 18
                             height: 20
-                            radius: Theme.corner
                             color: selected ? Theme.tint(Theme.accent, 0.16) : "transparent"
                             border.width: 1
                             border.color: selected

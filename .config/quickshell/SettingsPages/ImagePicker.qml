@@ -160,7 +160,6 @@ Item {
 
         signal clicked()
 
-        radius: Theme.corner
         border.width: 1
         border.color: (primary && enabled) ? Theme.accent : Theme.line
 
@@ -205,7 +204,6 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: Theme.rounded ? (6) : 0
         color: "#a6000000"
 
         MouseArea {
@@ -225,7 +223,6 @@ Item {
         width: Math.min(parent.width - 56, 880)
         height: Math.min(parent.height - 56, 560)
 
-        radius: Theme.rounded ? (Theme.corner + 2) : 0
         color: "#f5060606"
         border.width: 1
         border.color: Theme.tint(Theme.accent, 0.55)
@@ -327,7 +324,6 @@ Item {
 
                     width: places.width
                     height: 36
-                    radius: Theme.corner
 
                     color: active
                         ? Theme.tint(Theme.accent, 0.12)
@@ -450,7 +446,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(230, Math.max(170, parent.width * 0.32))
                     height: 38
-                    radius: Theme.corner
                     color: Theme.card
                     border.width: 1
                     border.color: searchInput.activeFocus ? Theme.accent : Theme.line
@@ -515,7 +510,6 @@ Item {
                     anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     height: 38
-                    radius: Theme.corner
                     color: Theme.card
                     border.width: 1
                     border.color: Theme.line
@@ -591,7 +585,6 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
 
-                radius: Theme.corner
                 color: Theme.card
                 border.width: 1
                 border.color: Theme.line
@@ -620,7 +613,6 @@ Item {
 
                         width: resultList.width - 8
                         height: 58
-                        radius: Theme.corner
 
                         color: selected
                             ? Theme.tint(Theme.accent, 0.12)
@@ -653,7 +645,6 @@ Item {
                             Rectangle {
                                 width: 46
                                 height: 46
-                                radius: Theme.corner
                                 color: Theme.surface
                                 border.width: 1
                                 border.color: Theme.line
@@ -755,7 +746,6 @@ Item {
                     anchors.right: parent.right
                     anchors.rightMargin: 3
                     width: 3
-                    radius: Theme.rounded ? (1.5) : 0
                     color: Theme.tint(Theme.ink, 0.25)
 
                     height: Math.max(

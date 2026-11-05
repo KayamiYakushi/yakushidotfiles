@@ -17,17 +17,26 @@ log_file="/tmp/yakushi-settings.log"
 
 mkdir -p "$runtime_root"
 
+# toggle-settings.sh [page]: with a page (e.g. tasks) it opens Settings on
+# that page, or switches an open Settings to it
+start_page="$1"
+
 if [ -r "$pid_file" ]; then
     pid="$(cat "$pid_file" 2>/dev/null)"
 
     if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-        qs -p "$settings_qml" ipc call settings hide >/dev/null 2>&1 ||             kill "$pid" 2>/dev/null
-        exit 0
+        if [ -n "$start_page" ]; then
+            timeout 2 qs -p "$settings_qml" ipc call settings open "$start_page" >/dev/null 2>&1 && exit 0
+            kill -9 "$pid" 2>/dev/null          # it does not answer: start a fresh one
+        else
+            timeout 2 qs -p "$settings_qml" ipc call settings hide >/dev/null 2>&1 || kill -9 "$pid" 2>/dev/null
+            exit 0
+        fi
     fi
 
     rm -f "$pid_file"
 fi
 
-qs -n -p "$settings_qml" >"$log_file" 2>&1 &
+YAKUSHI_SETTINGS_PAGE="$start_page" qs -n -p "$settings_qml" >"$log_file" 2>&1 &
 pid=$!
 printf '%s\n' "$pid" >"$pid_file"

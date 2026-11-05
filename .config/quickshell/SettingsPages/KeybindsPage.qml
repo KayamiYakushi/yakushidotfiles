@@ -232,7 +232,6 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 38
-        radius: Theme.rounded ? (10) : 0
         color: Theme.card
         border.width: 1
         border.color: searchInput.activeFocus
@@ -339,7 +338,6 @@ Item {
 
             width: ListView.view.width
             height: 50
-            radius: Theme.rounded ? (10) : 0
             color: rowHover.hovered || editing ? Theme.tint(Theme.ink, 0.035) : Theme.card
             border.width: 1
             border.color: editing
@@ -409,7 +407,6 @@ Item {
 
                             width: Math.max(26, capText.implicitWidth + 14)
                             height: 24
-                            radius: Theme.rounded ? (6) : 0
                             color: Theme.tint(Theme.ink, 0.06)
                             border.width: 1
                             border.color: Theme.tint(Theme.ink, 0.10)
@@ -421,7 +418,6 @@ Item {
                                 anchors.bottom: parent.bottom
                                 anchors.margins: 1
                                 height: 2
-                                radius: Theme.rounded ? (1) : 0
                                 color: Theme.tint("#000000", 0.35)
                             }
 
@@ -442,7 +438,6 @@ Item {
                 Rectangle {
                     visible: bindRow.editing
                     anchors.fill: parent
-                    radius: Theme.rounded ? (8) : 0
                     color: Theme.surface
                     border.width: 1
                     border.color: Theme.accent

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Persist Settings appearance state (panel opacity, accent colour, style).
+"""Persist Settings appearance state (panel opacity, accent colour).
 
 Commands:
     get                               Print the saved state as JSON.
-    set <opacity> <#rrggbb> [style]   Save the state (style: sharp|rounded).
+    set <opacity> <#rrggbb>           Save the state.
 
 State lives in ~/.config/quickshell/yakushi-ui.local.json (machine-local,
 git-ignored). If it does not exist yet, a legacy
@@ -78,9 +78,6 @@ def get() -> None:
         if isinstance(accent, str) and HEX.match(accent):
             result["accent"] = accent.lower()
 
-        if state.get("style") in ("sharp", "rounded"):
-            result["style"] = state["style"]
-
     elif LEGACY.exists():
         legacy = number_from_legacy(read_json(LEGACY))
         if legacy is not None and 0.0 <= legacy <= 1.0:
@@ -89,7 +86,7 @@ def get() -> None:
     emit(result)
 
 
-def set_state(opacity_raw: str, accent: str, style: str | None = None) -> None:
+def set_state(opacity_raw: str, accent: str) -> None:
     try:
         opacity = clamp(float(opacity_raw))
     except ValueError:
@@ -102,13 +99,14 @@ def set_state(opacity_raw: str, accent: str, style: str | None = None) -> None:
 
     DIR.mkdir(parents=True, exist_ok=True)
 
-    # Keep keys this command does not set (e.g. the style).
+    # Keep keys this command does not set; drop the old "style" (only one look now).
     previous = read_json(STATE)
     data = previous if isinstance(previous, dict) else {}
+    data.pop("style", None)
     data["panelOpacity"] = round(opacity, 3)
     data["accent"] = accent.lower()
-    if style in ("sharp", "rounded"):
-        data["style"] = style
+    data.pop("settingsWidth", None)           # Settings always opens at its default size
+    data.pop("settingsHeight", None)
 
     payload = json.dumps(data, indent=2) + "\n"
 
@@ -149,10 +147,10 @@ def main() -> None:
 
     if args[:1] == ["get"]:
         get()
-    elif args[:1] == ["set"] and len(args) in (3, 4):
-        set_state(args[1], args[2], args[3] if len(args) == 4 else None)
+    elif args[:1] == ["set"] and len(args) >= 3:               # older extra words are ignored
+        set_state(args[1], args[2])
     else:
-        emit({"ok": False, "message": "Usage: get | set <opacity> <#rrggbb> [sharp|rounded]"})
+        emit({"ok": False, "message": "Usage: get | set <opacity> <#rrggbb>"})
         raise SystemExit(1)
 
 

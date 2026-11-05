@@ -12,13 +12,14 @@ Item {
     default property alias content: inside.data
     property bool shown: false
     property real leanDegrees: 5
+    property bool still: false          // no leaning (while you resize it)
 
     // pointer position over the card, centre = (0, 0), edges = ±0.5
     property point pointer: Qt.point(0, 0)
 
     // the three animated values the transform reads
-    property real tiltX: shown ? -pointer.y * leanDegrees : 20
-    property real tiltY: shown ? pointer.x * leanDegrees : -16
+    property real tiltX: shown ? (still ? 0 : -pointer.y * leanDegrees) : 20
+    property real tiltY: shown ? (still ? 0 : pointer.x * leanDegrees) : -16
     property real size: shown ? 1 : 0.88
 
     Behavior on tiltX { NumberAnimation { duration: Theme.tSlow; easing.type: Easing.OutCubic } }

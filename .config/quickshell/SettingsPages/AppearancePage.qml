@@ -468,136 +468,6 @@ Item {
 
             Divider {}
 
-            // ---------------- Style: sharp / rounded ----------------
-            SectionLabel { text: "STYLE" }
-
-            Row {
-                id: styleRow
-
-                width: parent.width
-                spacing: 10
-
-                Repeater {
-                    model: [
-                        { key: "sharp", label: "SHARP", jp: "角", hint: "Hard corners, ruled lines" },
-                        { key: "rounded", label: "ROUNDED", jp: "丸", hint: "Soft cards, the earlier look" }
-                    ]
-
-                    delegate: Rectangle {
-                        id: styleCard
-
-                        required property var modelData
-                        readonly property bool rounded: modelData.key === "rounded"
-                        readonly property bool selected: Theme.rounded === rounded
-
-                        width: (styleRow.width - styleRow.spacing) / 2
-                        height: 64
-                        radius: Theme.corner
-                        color: selected ? Theme.tint(Theme.accent, 0.10) : Theme.card
-                        border.width: 1
-                        border.color: selected
-                            ? Theme.accent
-                            : (styleMouse.containsMouse ? Theme.lineHot : Theme.line)
-
-                        Behavior on color {
-                            ColorAnimation { duration: Theme.tFast }
-                        }
-
-                        // little window preview in that style
-                        Rectangle {
-                            id: preview
-
-                            anchors.left: parent.left
-                            anchors.leftMargin: 14
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 54
-                            height: 38
-                            radius: styleCard.rounded ? 8 : 0
-                            color: Theme.tint(Theme.ink, 0.04)
-                            border.width: 1
-                            border.color: styleCard.selected ? Theme.accent : Theme.inkMute
-
-                            Rectangle {
-                                x: 5
-                                y: 5
-                                width: 14
-                                height: parent.height - 10
-                                radius: styleCard.rounded ? 3 : 0
-                                color: Theme.tint(Theme.ink, 0.10)
-                            }
-
-                            Rectangle {
-                                x: 23
-                                y: 7
-                                width: 24
-                                height: 4
-                                radius: styleCard.rounded ? 2 : 0
-                                color: styleCard.selected ? Theme.accent : Theme.inkSoft
-                            }
-
-                            Rectangle {
-                                x: 23
-                                y: 16
-                                width: 24
-                                height: 14
-                                radius: styleCard.rounded ? 3 : 0
-                                color: Theme.tint(Theme.ink, 0.10)
-                            }
-                        }
-
-                        Column {
-                            anchors.left: preview.right
-                            anchors.leftMargin: 14
-                            anchors.right: parent.right
-                            anchors.rightMargin: 12
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 4
-
-                            Row {
-                                spacing: 8
-
-                                Text {
-                                    text: styleCard.modelData.label
-                                    color: styleCard.selected ? Theme.accent : Theme.ink
-                                    font.family: Theme.mono
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                    font.letterSpacing: 2
-                                }
-
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: styleCard.modelData.jp
-                                    color: Theme.inkSoft
-                                    font.family: "Noto Sans CJK JP"
-                                    font.pixelSize: 11
-                                }
-                            }
-
-                            Text {
-                                width: parent.width
-                                text: styleCard.modelData.hint
-                                color: Theme.inkSoft
-                                font.family: Theme.mono
-                                font.pixelSize: 10
-                                elide: Text.ElideRight
-                            }
-                        }
-
-                        MouseArea {
-                            id: styleMouse
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: Theme.rounded = styleCard.rounded
-                        }
-                    }
-                }
-            }
-
-            Divider {}
-
             // ---------------- Apps: light / dark ----------------
             Row {
                 spacing: 10
@@ -636,7 +506,6 @@ Item {
 
                         width: (schemeRow.width - schemeRow.spacing) / 2
                         height: 64
-                        radius: Theme.corner
                         color: selected ? Theme.tint(Theme.accent, 0.10) : Theme.card
                         border.width: 1
                         border.color: selected
@@ -656,7 +525,6 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 54
                             height: 38
-                            radius: Theme.rounded ? 8 : 0
                             color: schemeCard.modelData.paper
                             border.width: 1
                             border.color: schemeCard.selected ? Theme.accent : Theme.inkMute
@@ -678,7 +546,6 @@ Item {
                                     y: 14 + index * 7
                                     width: index === 1 ? 26 : 36
                                     height: 3
-                                    radius: Theme.rounded ? 1.5 : 0
                                     color: index === 0 && schemeCard.selected ? Theme.accent : schemeCard.modelData.ink
                                     opacity: index === 0 ? 1 : 0.55
                                 }
@@ -767,7 +634,6 @@ Item {
 
                         width: (presetGrid.width - 4 * presetGrid.columnSpacing) / 5
                         height: 40
-                        radius: Theme.corner
                         color: Theme.card
                         border.width: 1
                         border.color: selected
@@ -785,7 +651,6 @@ Item {
                             Rectangle {
                                 width: 12
                                 height: 12
-                                radius: Theme.rounded ? (6) : 0
                                 color: modelData.accent
                                 border.width: 1
                                 border.color: Theme.inkSoft
@@ -850,7 +715,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 132
                     height: 26
-                    radius: Theme.corner
                     color: Theme.groove
                     border.width: 1
                     border.color: invalid
@@ -865,7 +729,6 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 12
                         height: 12
-                        radius: Theme.rounded ? (6) : 0
                         color: Theme.accent
                     }
 
@@ -1018,7 +881,6 @@ Item {
 
                         width: (body.width - 12) / 2
                         height: 48
-                        radius: Theme.corner
                         color: Theme.card
                         border.width: 1
                         border.color: selected
@@ -1201,7 +1063,6 @@ Item {
 
                         width: accentLabel.implicitWidth + 34
                         height: 26
-                        radius: Theme.corner
                         color: selected ? Theme.tint(Theme.accent, 0.16) : "transparent"
                         border.width: 1
                         border.color: selected
@@ -1216,7 +1077,6 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 10
                                 height: 10
-                                radius: Theme.rounded ? (5) : 0
                                 color: Theme.accent
                             }
 
@@ -1254,7 +1114,6 @@ Item {
 
                         width: 132
                         height: 26
-                        radius: Theme.corner
                         color: Theme.groove
                         border.width: 1
                         border.color: invalid
@@ -1269,7 +1128,6 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 12
                             height: 12
-                            radius: Theme.rounded ? (6) : 0
                             color: page.borderColor === "accent" ? Theme.inkMute : page.borderColor
                         }
 
