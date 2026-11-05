@@ -14,9 +14,45 @@ Runs once and exits: no daemon, no timers.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
+
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
 
 HOME = Path.home()
 UI_STATE = HOME / ".config/quickshell/yakushi-ui.local.json"
@@ -43,7 +79,7 @@ def accent() -> str:
 def write_rofi(colour: str) -> None:
     if not ROFI_ACCENT.parent.is_dir():
         return
-    ROFI_ACCENT.write_text(
+    write_safely(ROFI_ACCENT, 
         "/* Written by Yakushi Settings (accent colour). */\n"
         "* {\n"
         f"    accent: {colour}ff;\n"
@@ -56,7 +92,7 @@ def write_waybar(colour: str) -> None:
     """Waybar reloads its style on change (reload_style_on_change)."""
     if not WAYBAR_ACCENT.parent.is_dir():
         return
-    WAYBAR_ACCENT.write_text(
+    write_safely(WAYBAR_ACCENT, 
         "/* Written by Yakushi Settings (accent colour). */\n"
         f"@define-color accent {colour};\n"
     )
@@ -69,7 +105,7 @@ def write_hyprlock(colour: str) -> None:
         return
     updated = re.sub(r"^\$accent\s*=.*$", f"$accent = rgba({colour[1:]}ff)", text, count=1, flags=re.M)
     if updated != text:
-        HYPRLOCK.write_text(updated)
+        write_safely(HYPRLOCK, updated)
 
 
 def main() -> None:

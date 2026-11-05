@@ -23,10 +23,46 @@ Runs only when called.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
 
 HYPR = Path.home() / ".config/hypr"
 CONFIG = HYPR / "hyprland.lua"
@@ -140,7 +176,7 @@ def write_decor(state: dict) -> None:
     HYPR.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(state, indent=2) + "\n")
     lua = lua_config(state)
-    LOCAL_LUA.write_text(
+    write_safely(LOCAL_LUA, 
         "-- Window shadow and border, written by Settings -> Appearance\n"
         "-- (yakushi-windowctl.py). Machine-local; safe to delete.\n" + lua
     )
@@ -247,7 +283,7 @@ def set_value(name: str, raw: str) -> None:
         fail(f"Could not find {lua_key} in hyprland.lua.")
 
     if updated != text:
-        CONFIG.write_text(updated)
+        write_safely(CONFIG, updated)
 
     apply_live(keyword, value)
     emit({"ok": True, **read_values(updated)})

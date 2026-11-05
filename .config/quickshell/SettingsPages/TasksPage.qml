@@ -338,6 +338,7 @@ Item {
         Text {
             id: chipText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: chip.label
             color: chip.on ? Theme.ink : Theme.inkSoft
@@ -377,6 +378,7 @@ Item {
         Text {
             id: actText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: act.armedHere ? "CLICK AGAIN" : act.label
             color: act.danger || act.armedHere ? Theme.alert : Theme.ink
@@ -407,6 +409,7 @@ Item {
         Text {
             id: meterLabel
 
+            textFormat: Text.PlainText
             text: parent.label
             color: Theme.inkMute
             font.family: Theme.mono
@@ -415,6 +418,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.baseline: meterLabel.baseline
             text: parent.value
@@ -549,6 +553,7 @@ Item {
         Text {
             id: bannerGlyph
 
+            textFormat: Text.PlainText
             x: 14
             anchors.verticalCenter: parent.verticalCenter
             text: String.fromCodePoint(0xF0026)
@@ -558,6 +563,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: bannerGlyph.right
             anchors.leftMargin: 10
             anchors.right: bannerButtons.left
@@ -600,6 +606,7 @@ Item {
                     Text {
                         id: showText
 
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: page.trouble.length > 1 ? "SHOW " + parent.modelData.name.toUpperCase().slice(0, 14) : "SHOW"
                         color: Theme.ink
@@ -658,6 +665,7 @@ Item {
             Text {
                 id: lens
 
+                textFormat: Text.PlainText
                 x: 10
                 anchors.verticalCenter: parent.verticalCenter
                 text: String.fromCodePoint(0xF0349)
@@ -689,6 +697,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: searchInput.text === "" && !searchInput.activeFocus
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Search name, command or PID"
@@ -723,6 +732,7 @@ Item {
         height: 18
 
         Text {
+            textFormat: Text.PlainText
             x: 16
             text: "NAME"
             color: Theme.inkMute
@@ -732,6 +742,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.rightMargin: 16 + 96 + 20
             width: 64
@@ -744,6 +755,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.rightMargin: 16
             width: 96
@@ -814,6 +826,7 @@ Item {
             Text {
                 id: lineName
 
+                textFormat: Text.PlainText
                 anchors.left: parent.left
                 anchors.leftMargin: 32
                 anchors.right: tag.visible ? tag.left : cpuText.left
@@ -828,6 +841,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.left: lineName.left
                 anchors.right: lineName.right
                 anchors.top: parent.verticalCenter
@@ -858,6 +872,7 @@ Item {
                 Text {
                     id: tagText
 
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: page.flagText(line.flag)
                     color: tag.bad ? Theme.alert : Theme.inkSoft
@@ -870,6 +885,7 @@ Item {
             Text {
                 id: cpuText
 
+                textFormat: Text.PlainText
                 anchors.right: memText.left
                 anchors.rightMargin: 20
                 anchors.verticalCenter: parent.verticalCenter
@@ -884,6 +900,7 @@ Item {
             Text {
                 id: memText
 
+                textFormat: Text.PlainText
                 anchors.right: parent.right
                 anchors.rightMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
@@ -906,6 +923,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: rows.count === 0
             anchors.centerIn: parent
             text: page.cpu < 0 ? "Reading…" : page.search !== "" ? "Nothing matches “" + page.search + "”." : "Nothing here."
@@ -955,6 +973,7 @@ Item {
             z: 2
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: "✕"
                 color: Theme.inkSoft
@@ -1038,6 +1057,7 @@ Item {
                     border.color: page.showWhy || whyMouse.containsMouse ? Theme.accent : Theme.lineHot
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: page.showWhy
                         anchors.centerIn: parent
                         text: "✓"
@@ -1051,6 +1071,7 @@ Item {
                 Text {
                     id: whyLabel
 
+                    textFormat: Text.PlainText
                     anchors.left: whyBox.right
                     anchors.leftMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
@@ -1072,6 +1093,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 visible: page.pendingAct === ""
                 anchors.left: whyToggle.right
                 anchors.leftMargin: 20
@@ -1164,6 +1186,7 @@ Item {
                 spacing: 12
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: page.info === null || page.info.ok === false
                     text: page.info === null ? "Looking it up…" : page.info.message || "Could not look it up."
                     color: Theme.inkSoft
@@ -1178,6 +1201,7 @@ Item {
                     spacing: 4
 
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         elide: Text.ElideRight
                         text: detail.facts ? detail.facts.name + (page.selectedAlive ? "" : "   (ended)") : ""
@@ -1187,6 +1211,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         elide: Text.ElideRight
                         text: detail.facts ? ["PID " + detail.facts.pid, detail.facts.proc, detail.facts.user,
@@ -1201,6 +1226,7 @@ Item {
 
                 // why it is tagged
                 Text {
+                    textFormat: Text.PlainText
                     visible: page.selectedFlag !== ""
                     width: parent.width
                     wrapMode: Text.Wrap
@@ -1218,6 +1244,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: detail.facts !== null && page.showWhy
                     text: "WHY IT RUNS"
                     color: Theme.inkSoft
@@ -1238,6 +1265,7 @@ Item {
                         Text {
                             id: reasonGlyph
 
+                            textFormat: Text.PlainText
                             width: 22
                             text: page.kindGlyph(parent.modelData.kind)
                             color: parent.modelData.kind === "core" || parent.modelData.kind === "kernel" ? Theme.alert : Theme.accent
@@ -1248,6 +1276,7 @@ Item {
                         Text {
                             id: reasonText
 
+                            textFormat: Text.PlainText
                             anchors.left: reasonGlyph.right
                             anchors.leftMargin: 8
                             anchors.right: parent.right
@@ -1269,6 +1298,7 @@ Item {
                     topPadding: 4
 
                     Text {
+                        textFormat: Text.PlainText
                         text: "PROGRAM"
                         color: Theme.inkMute
                         font.family: Theme.mono
@@ -1289,6 +1319,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         topPadding: 4
                         text: "COMMAND"
                         color: Theme.inkMute

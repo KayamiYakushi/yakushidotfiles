@@ -326,6 +326,7 @@ Rectangle {
 
     // ---- small parts (kept free of outer ids)
     component Caption: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 10
@@ -334,6 +335,7 @@ Rectangle {
     }
 
     component Plain: Text {
+        textFormat: Text.PlainText
         width: parent ? parent.width : 0
         wrapMode: Text.Wrap
         color: Theme.ink
@@ -364,6 +366,7 @@ Rectangle {
         Text {
             id: pillText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: pill.label
             color: pill.danger || pill.hot ? Theme.alert : Theme.ink
@@ -398,6 +401,7 @@ Rectangle {
         height: 32
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: panel.view === "search" ? "REMOVE A PACKAGE"
@@ -480,6 +484,7 @@ Rectangle {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: panel.pending === ""
             anchors.left: parent.left
             anchors.right: footButtons.left
@@ -578,6 +583,7 @@ Rectangle {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: searchBox.text === "" && !searchBox.activeFocus
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Search installed packages by name or description"
@@ -618,6 +624,7 @@ Rectangle {
                             Text {
                                 id: scopeText
 
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: scopeChip.modelData[1] + (scopeChip.count !== undefined ? "  " + scopeChip.count : "")
                                 color: scopeChip.on ? Theme.ink : Theme.inkSoft
@@ -639,6 +646,7 @@ Rectangle {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: scopes.right
                     anchors.leftMargin: 14
                     anchors.right: removeUnused.visible ? removeUnused.left : parent.right
@@ -686,6 +694,7 @@ Rectangle {
                     Text {
                         id: pkgName
 
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 14
                         anchors.bottom: parent.verticalCenter
@@ -699,6 +708,7 @@ Rectangle {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 14
                         anchors.top: parent.verticalCenter
@@ -719,6 +729,7 @@ Rectangle {
                     Text {
                         id: pkgTag
 
+                        textFormat: Text.PlainText
                         anchors.right: pkgSize.left
                         anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
@@ -734,6 +745,7 @@ Rectangle {
                     Text {
                         id: pkgSize
 
+                        textFormat: Text.PlainText
                         anchors.right: parent.right
                         anchors.rightMargin: 14
                         anchors.verticalCenter: parent.verticalCenter
@@ -904,6 +916,7 @@ Rectangle {
                         border.color: Theme.line
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: parent.left
                             anchors.leftMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
@@ -919,6 +932,7 @@ Rectangle {
                         Text {
                             id: goWhy
 
+                            textFormat: Text.PlainText
                             anchors.right: goSize.left
                             anchors.rightMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -931,6 +945,7 @@ Rectangle {
                         Text {
                             id: goSize
 
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
@@ -1037,6 +1052,7 @@ Rectangle {
                             border.color: fileRow.on ? Theme.accent : Theme.lineHot
 
                             Text {
+                                textFormat: Text.PlainText
                                 visible: fileRow.on
                                 anchors.centerIn: parent
                                 text: "✓"
@@ -1050,6 +1066,7 @@ Rectangle {
                         Text {
                             id: filePath
 
+                            textFormat: Text.PlainText
                             anchors.left: box.right
                             anchors.leftMargin: 12
                             anchors.right: fileSize.left
@@ -1064,6 +1081,7 @@ Rectangle {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             visible: fileRow.modelData.note !== ""
                             anchors.left: filePath.left
                             anchors.right: filePath.right
@@ -1079,6 +1097,7 @@ Rectangle {
                         Text {
                             id: fileSize
 
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
@@ -1132,6 +1151,7 @@ Rectangle {
                     Text {
                         id: oldName
 
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 14
                         anchors.bottom: parent.verticalCenter
@@ -1145,6 +1165,7 @@ Rectangle {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 14
                         anchors.top: parent.verticalCenter

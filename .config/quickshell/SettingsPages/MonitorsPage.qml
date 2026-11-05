@@ -477,6 +477,7 @@ Item {
 
     // ---------------- Small building blocks ----------------
     component SectionLabel: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 11
@@ -509,6 +510,7 @@ Item {
         Text {
             id: chipLabel
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: chip.label
             color: chip.selected ? Theme.ink : Theme.inkSoft
@@ -559,6 +561,7 @@ Item {
         Text {
             id: actText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: act.label
             color: act.primary && act.live ? Theme.ink : Theme.inkSoft
@@ -629,6 +632,7 @@ Item {
     Text {
         id: noteLine
 
+        textFormat: Text.PlainText
         anchors.top: headRule.bottom
         anchors.topMargin: 8
         anchors.left: parent.left
@@ -676,6 +680,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.right: parent.right
                     text: "Drag to arrange  ·  snaps to edges"
                     color: Theme.inkMute
@@ -773,6 +778,7 @@ Item {
                                 visible: parent.height > 44
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     text: box.modelData.name
                                     color: Theme.ink
@@ -784,6 +790,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     text: box.modelData.width + "×" + box.modelData.height
                                         + "  ·  " + page.hz(box.modelData.refreshRate)
@@ -795,6 +802,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     visible: box.height > 72
                                     text: box.selected
@@ -857,6 +865,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: page.displays.length === 0
                     anchors.centerIn: parent
                     text: "No displays reported by Hyprland."
@@ -900,6 +909,7 @@ Item {
                         spacing: 10
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.verticalCenter: parent.verticalCenter
                             text: page.clash !== ""
                                 ? "Overlaps " + page.clash + "  ·  " + page.planX + ", " + page.planY
@@ -982,6 +992,7 @@ Item {
                                     : Theme.tint(Theme.ink, 0.05)
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     text: page.glyph(0xF0379)
                                     color: entry.expanded ? Theme.accent : Theme.inkSoft
@@ -1002,6 +1013,7 @@ Item {
                                     spacing: 8
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: entry.mon.name
                                         color: Theme.ink
                                         font.family: Theme.mono
@@ -1010,6 +1022,7 @@ Item {
                                     }
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         visible: entry.mon.focused === true
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "FOCUSED"
@@ -1021,6 +1034,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     text: entry.mon.description !== ""
                                         ? entry.mon.description
@@ -1057,6 +1071,7 @@ Item {
                                         Text {
                                             id: pillText
 
+                                            textFormat: Text.PlainText
                                             anchors.centerIn: parent
                                             text: parent.modelData
                                             color: Theme.inkSoft
@@ -1070,6 +1085,7 @@ Item {
                             Text {
                                 id: chevron
 
+                                textFormat: Text.PlainText
                                 anchors.right: parent.right
                                 anchors.rightMargin: 16
                                 anchors.verticalCenter: parent.verticalCenter
@@ -1179,6 +1195,7 @@ Item {
                                 height: 34
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: page.modeDiffers
@@ -1252,6 +1269,7 @@ Item {
                                         border.color: coord.activeFocus ? Theme.accent : Theme.lineHot
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.left: parent.left
                                             anchors.leftMargin: 10
                                             anchors.verticalCenter: parent.verticalCenter
@@ -1342,6 +1360,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: !page.hasBacklight
                         width: parent.width
                         text: "Brightness: no built-in backlight found — external displays are adjusted with their own buttons."
@@ -1388,6 +1407,7 @@ Item {
                         height: 10
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: parent.left
                             text: "WARMER"
                             color: Theme.inkMute
@@ -1397,6 +1417,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             text: "COOLER"
                             color: Theme.inkMute

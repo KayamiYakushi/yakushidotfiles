@@ -27,6 +27,7 @@ Item {
     Text {
         id: glyph
 
+        textFormat: Text.PlainText
         anchors.left: parent.left
         anchors.top: parent.top
         width: 22
@@ -37,6 +38,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.left: glyph.right
         anchors.right: parent.right
         anchors.verticalCenter: glyph.verticalCenter

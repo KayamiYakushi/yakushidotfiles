@@ -309,6 +309,7 @@ Item {
         Text {
             id: chipText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: chip.label
             color: chip.on ? Theme.ink : Theme.inkSoft
@@ -351,6 +352,7 @@ Item {
         Text {
             id: btnText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: btn.armedHere ? "CLICK AGAIN" : btn.label
             color: btn.danger || btn.armedHere ? Theme.alert : Theme.ink
@@ -380,6 +382,7 @@ Item {
         Text {
             id: secText
 
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
@@ -391,6 +394,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.baseline: secText.baseline
             text: parent.side
@@ -432,6 +436,7 @@ Item {
         Text {
             id: srTitle
 
+            textFormat: Text.PlainText
             anchors.left: mark.right
             anchors.leftMargin: 14
             anchors.verticalCenter: parent.verticalCenter
@@ -445,6 +450,7 @@ Item {
         Text {
             id: srText
 
+            textFormat: Text.PlainText
             anchors.left: srTitle.right
             anchors.leftMargin: 8
             anchors.right: btnRow.left
@@ -476,6 +482,7 @@ Item {
 
     // a small, dim line (a port, a CVE, a login try)
     component Detail: Text {
+        textFormat: Text.PlainText
         property bool hot: false
 
         width: parent ? parent.width : 0
@@ -555,6 +562,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: !passwordAsk.visible
             anchors.left: parent.left
             anchors.right: parent.right
@@ -733,6 +741,7 @@ Item {
                         visible: upPanel.running
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             text: page.up ? page.up.phase.toUpperCase() : ""
@@ -743,6 +752,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             text: page.up && page.up.total > 0 ? page.up.n + " / " + page.up.total : ""
@@ -806,6 +816,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: upPanel.running
                         width: parent.width
                         wrapMode: Text.WordWrap
@@ -898,6 +909,7 @@ Item {
                 Text {
                     id: guardText
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 24
                     anchors.right: guardButtons.left
@@ -950,6 +962,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 24
                         anchors.right: meButton.left
@@ -987,6 +1000,7 @@ Item {
                 Text {
                     id: loginText
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 24
                     anchors.right: seenButton.left
@@ -1071,6 +1085,7 @@ Item {
                 Text {
                     id: scanText
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 24
                     anchors.right: scanButton.left

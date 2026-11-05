@@ -108,6 +108,11 @@ PanelWindow {
             return x * x * (3 - 2 * x)
         }
 
+        // tiles farther than this from the centre cannot be on screen (all
+        // the tiles in between are at least edge size): they skip the layout
+        // sums, so a folder with hundreds of pictures moves as lightly as ten
+        readonly property real limit: half / (slot * picker.edgeScale + picker.gap) + 4
+
         // dock size by distance d (in tiles) from the centre
         function sizeAt(d) {
             var t = 1 - smooth(Math.min(1, Math.abs(d) / reach))
@@ -213,16 +218,17 @@ PanelWindow {
                 required property string fileName
 
                 readonly property real d: index - strip.pos
-                readonly property real open: strip.opennessAt(d)
-                readonly property real middle: strip.half + strip.offset(d)
+                readonly property bool near: Math.abs(d) <= strip.limit
+                readonly property real open: near ? strip.opennessAt(d) : 0
+                readonly property real middle: near ? strip.half + strip.offset(d) : (d < 0 ? -1e6 : 1e6)
                 readonly property bool onScreen: middle + width / 2 > 0 && middle - width / 2 < strip.width
                 property bool seen: false
 
                 onOnScreenChanged: if (onScreen) seen = true
                 Component.onCompleted: if (onScreen) seen = true
 
-                width: strip.widthAt(d)
-                height: picker.stripHeight * Math.min(1, strip.sizeAt(d))
+                width: near ? strip.widthAt(d) : 0
+                height: near ? picker.stripHeight * Math.min(1, strip.sizeAt(d)) : 0
                 x: middle - width / 2
                 y: (picker.stripHeight - height) / 2
                 visible: onScreen
@@ -230,6 +236,7 @@ PanelWindow {
                 Text {
                     id: waiting
 
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     color: cfg.frame_color
                     font.pixelSize: 16
@@ -246,13 +253,23 @@ PanelWindow {
                     smooth: true
                     sourceSize.width: strip.wide
                     sourceSize.height: picker.stripHeight
-                    source: tile.seen ? "file://" + picker.expand(cfg.thumbs_dir) + tile.fileName : ""
+                    // names can hold # % ? and spaces: encode them for the URL
+                    source: tile.seen ? "file://" + picker.expand(cfg.thumbs_dir) + encodeURIComponent(tile.fileName) : ""
 
-                    // the thumbnail may still be being made: try again
+                    // the thumbnail may still be being made: try again, a
+                    // while (a picture that cannot be read is given up on)
+                    property int tries: 0
+
                     onStatusChanged: {
                         if (status === Image.Error) {
-                            waiting.text = "Caching"
-                            again.restart()
+                            if (tries < 30) {
+                                waiting.text = "Caching"
+                                again.restart()
+                            } else {
+                                waiting.text = "Unreadable"
+                            }
+                        } else if (status === Image.Ready) {
+                            waiting.text = ""
                         }
                     }
 
@@ -261,6 +278,7 @@ PanelWindow {
 
                         interval: 1000
                         onTriggered: {
+                            picture.tries += 1
                             var src = picture.source
                             picture.source = ""
                             picture.source = src

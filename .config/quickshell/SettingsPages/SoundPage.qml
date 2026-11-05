@@ -51,6 +51,7 @@ Item {
     }
 
     component Heading: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 11
@@ -75,6 +76,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: String.fromCodePoint(page.speakerIcon(spk.amount, spk.off))
             color: spk.off ? Theme.alert : Theme.accent
@@ -143,6 +145,7 @@ Item {
                 Text {
                     id: mainName
 
+                    textFormat: Text.PlainText
                     anchors.left: mainSpeaker.right
                     anchors.leftMargin: 14
                     anchors.bottom: mainSpeaker.verticalCenter
@@ -154,6 +157,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: mainName.left
                     anchors.right: mainPct.left
                     anchors.rightMargin: 12
@@ -169,6 +173,7 @@ Item {
                 Text {
                     id: mainPct
 
+                    textFormat: Text.PlainText
                     anchors.right: parent.right
                     anchors.rightMargin: 18
                     anchors.verticalCenter: mainSpeaker.verticalCenter
@@ -222,6 +227,7 @@ Item {
                         Text {
                             id: devIcon
 
+                            textFormat: Text.PlainText
                             x: 16
                             anchors.verticalCenter: parent.verticalCenter
                             text: String.fromCodePoint(page.deviceIcon(dev.modelData))
@@ -231,6 +237,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: devIcon.right
                             anchors.leftMargin: 14
                             anchors.right: devTick.left
@@ -246,6 +253,7 @@ Item {
                         Text {
                             id: devTick
 
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -270,6 +278,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: page.devices.length === 0
                     text: "No audio outputs found."
                     color: Theme.inkMute
@@ -296,6 +305,7 @@ Item {
                     Text {
                         id: playerCount
 
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: String(page.players.length)
                         color: Theme.accent
@@ -339,6 +349,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: playerSpeaker.right
                             anchors.leftMargin: 14
                             anchors.right: playerPct.left
@@ -354,6 +365,7 @@ Item {
                         Text {
                             id: playerPct
 
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 16
                             y: 14
@@ -377,6 +389,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: page.players.length === 0
                     text: "No app is playing audio right now."
                     color: Theme.inkMute

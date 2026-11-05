@@ -4,7 +4,11 @@
 Commands:
     scan                  Installed apps per category + the current choice (JSON).
     set <category> <id>   Make the app (a .desktop id) the default for that category.
-    shell <path>          Change the login shell (asks for your password via polkit).
+    shell <path> [--password-stdin]
+                          Change the login shell. With --password-stdin your
+                          password is the first line of stdin (Settings asks
+                          for it in the page; it goes to sudo through a pipe),
+                          else pkexec asks.
 
 What "default" means here:
     * Files and links open with it: ~/.config/mimeapps.list [Default Applications]
@@ -28,6 +32,41 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
 
 HOME = Path.home()
 CONFIG = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config")
@@ -351,7 +390,7 @@ def write_mimeapps(mimes: list[str], app_id: str) -> None:
         out.append("[Default Applications]")
         out.extend(f"{m}={app_id};" for m in mimes)
     MIMEAPPS.parent.mkdir(parents=True, exist_ok=True)
-    MIMEAPPS.write_text("\n".join(out) + "\n")
+    write_safely(MIMEAPPS, "\n".join(out) + "\n")
 
 
 def set_hypr(var: str, command: str) -> bool:
@@ -365,7 +404,7 @@ def set_hypr(var: str, command: str) -> bool:
     if count == 0:
         return False
     if new != text:
-        HYPR_CONF.write_text(new)
+        write_safely(HYPR_CONF, new)
         try:
             subprocess.run(["hyprctl", "reload"], capture_output=True, timeout=5)
         except (OSError, subprocess.TimeoutExpired):
@@ -379,7 +418,7 @@ def set_xdg_terminal(app_id: str) -> None:
     except OSError:
         lines = []
     XDG_TERMINALS.parent.mkdir(parents=True, exist_ok=True)
-    XDG_TERMINALS.write_text("\n".join([app_id] + lines) + "\n")
+    write_safely(XDG_TERMINALS, "\n".join([app_id] + lines) + "\n")
 
 
 def set_default(key: str, app_id: str) -> None:
@@ -415,17 +454,36 @@ def set_shell(path: str) -> None:
         emit({"ok": True, "shell": path, "message": "Already your login shell."})
         return
     user = pwd.getpwuid(os.getuid()).pw_name
-    if not shutil.which("pkexec"):
-        fail("pkexec is missing; run: chsh -s " + path)
-    proc = subprocess.run(["pkexec", "usermod", "--shell", path, user], capture_output=True, text=True)
-    if proc.returncode != 0:
-        fail("Not changed (authentication cancelled or failed).")
+    tasks = taskctl()
+    result, err = tasks.as_root(["usermod", "--shell", path, user], 60)
+    if result == "wrong":
+        emit({"ok": False, "wrongPassword": True, "message": tasks.ROOT_MESSAGES["wrong"]})
+        raise SystemExit(1)
+    if result != "ok":
+        fail(tasks.ROOT_MESSAGES.get(result) or ("Not changed: " + err if err else "Not changed."))
     emit({"ok": True, "shell": path,
           "message": f"Login shell is now {Path(path).name}. New terminals use it after you log out and back in."})
 
 
+_TASKS = None
+
+
+def taskctl():
+    """yakushi-taskctl.py, for running a command as root with your password"""
+    global _TASKS
+    if _TASKS is None:
+        import importlib.util
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("yakushi_taskctl", Path(__file__).resolve().parent / "yakushi-taskctl.py")
+        _TASKS = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_TASKS)
+    return _TASKS
+
+
 def main() -> None:
     args = sys.argv[1:]
+    if "--password-stdin" in args:
+        args = taskctl().take_password(args)
     if args == ["scan"]:
         scan()
     elif len(args) == 3 and args[0] == "set":
@@ -433,7 +491,7 @@ def main() -> None:
     elif len(args) == 2 and args[0] == "shell":
         set_shell(args[1])
     else:
-        fail("Usage: scan | set <category> <desktop-id> | shell <path>")
+        fail("Usage: scan | set <category> <desktop-id> | shell <path> [--password-stdin]")
 
 
 if __name__ == "__main__":

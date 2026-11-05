@@ -6,7 +6,7 @@ img="$1"
 [ -f "$img" ] || { echo "apply.sh: no such image: $img" >&2; exit 1; }
 
 awww query >/dev/null 2>&1 || {
-    awww-daemon >/tmp/yakushi-awww-daemon.log 2>&1 &
+    awww-daemon >/dev/null 2>&1 &
     sleep 0.5
 }
 

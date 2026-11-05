@@ -4,7 +4,7 @@
 # is reused over IPC; otherwise a fresh one is started (it quits by itself).
 
 case "$1" in
-    up)   wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ ;;
+    up)   wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;   # never past 100 % (like the bar)
     down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
     mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
     show) ;;
@@ -12,12 +12,12 @@ case "$1" in
 esac
 
 shell_file="$HOME/.config/quickshell/volume-osd-shell.qml"
-state_dir="${XDG_RUNTIME_DIR:-/tmp}/yakushi"
+state_dir="${XDG_RUNTIME_DIR:-/tmp/yakushi-$(id -u)}/yakushi"
 pid_file="$state_dir/volume-osd.pid"
 mkdir -p "$state_dir"
 
 running_pid=$(cat "$pid_file" 2>/dev/null)
-if [ -n "$running_pid" ] && kill -0 "$running_pid" 2>/dev/null; then
+if [ -n "$running_pid" ] && grep -qa -- "volume-osd-shell.qml" "/proc/$running_pid/cmdline" 2>/dev/null; then
     qs -p "$shell_file" ipc call volumeOsd show >/dev/null 2>&1 && exit 0
 fi
 

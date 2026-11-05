@@ -3,5 +3,5 @@
     "thumbs_dir": "~/.cache/quickshell/thumbs/",
     "visible_count": 10,
     "frame_color": "#80FFFFFF",
-    "thumb_jobs": 20
+    "thumb_jobs": 4
 }

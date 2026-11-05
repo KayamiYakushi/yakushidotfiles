@@ -11,11 +11,11 @@ export QT_QUICK_CONTROLS_STYLE=Fusion
 
 
 settings_qml="$HOME/.config/quickshell/settings-shell.qml"
-runtime_root="${XDG_RUNTIME_DIR:-/tmp/yakushi-$UID}/yakushi"
+runtime_root="${XDG_RUNTIME_DIR:-/tmp/yakushi-$(id -u)}/yakushi"
 pid_file="$runtime_root/settings.pid"
-log_file="/tmp/yakushi-settings.log"
+log_file="$runtime_root/settings.log"     # your private runtime folder, not /tmp
 
-mkdir -p "$runtime_root"
+mkdir -p -m 700 "$runtime_root"
 
 # toggle-settings.sh [page]: with a page (e.g. tasks) it opens Settings on
 # that page, or switches an open Settings to it
@@ -24,7 +24,9 @@ start_page="$1"
 if [ -r "$pid_file" ]; then
     pid="$(cat "$pid_file" 2>/dev/null)"
 
-    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    # only if that process really is Settings: a pid number can be reused by
+    # another program after Settings has closed
+    if [ -n "$pid" ] && grep -qa -- "settings-shell.qml" "/proc/$pid/cmdline" 2>/dev/null; then
         if [ -n "$start_page" ]; then
             timeout 2 qs -p "$settings_qml" ipc call settings open "$start_page" >/dev/null 2>&1 && exit 0
             kill -9 "$pid" 2>/dev/null          # it does not answer: start a fresh one

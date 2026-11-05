@@ -57,6 +57,23 @@ Official Arch repositories only, no AUR, and nothing runs in the background unle
   browser, editor and viewers.
 - **Wallpaper picker** (`SUPER + W`) — every image under `~/Documents`, applied with `awww`.
 
+## Light and careful
+
+- **Almost nothing stays running.** The bar reads a few kernel files every 2 seconds and
+  is otherwise event driven; Settings, the volume pill and the wallpaper picker are separate
+  processes that quit when closed. hyprsunset runs only while night light is on, hypridle
+  only while auto lock is on, cava only while the visualizer is on screen.
+- **Passwords never leave the page.** Whenever something needs root (removing a package,
+  the system update, the firewall, the login screen background, the login shell), Settings
+  asks for your password itself and hands it to sudo through a pipe. Wi-Fi passwords reach
+  NetworkManager the same way: never on a command line, where other programs could read them.
+- **Untrusted text stays text.** Network and Bluetooth names, song titles, process names and
+  log lines are always shown as plain text, so none of them can load anything from the
+  internet or change how a page looks.
+- **Config files are written safely.** On a full disk a change is refused and your
+  `hyprland.lua`, keybinds and the rest stay whole.
+- **Suspend locks the screen first**, so the computer never wakes up unlocked.
+
 ## Install
 
 ```fish

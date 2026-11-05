@@ -23,6 +23,7 @@ Item {
     Text {
         id: label
 
+        textFormat: Text.PlainText
         anchors.left: block.right
         anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
@@ -37,6 +38,7 @@ Item {
     Text {
         id: slashes
 
+        textFormat: Text.PlainText
         anchors.left: label.right
         anchors.leftMargin: 14
         anchors.verticalCenter: parent.verticalCenter

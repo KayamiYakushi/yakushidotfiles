@@ -97,6 +97,7 @@ PanelWindow {
             color: Theme.tint(osd.tone, 0.18)
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 color: osd.tone
                 font.family: Theme.glyphs
@@ -129,6 +130,7 @@ PanelWindow {
         Text {
             id: readout
 
+            textFormat: Text.PlainText
             x: pill.width - width - 16
             y: (pill.height - height) / 2
             width: 42

@@ -42,6 +42,41 @@ import zipfile
 import zlib
 from pathlib import Path
 
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
+
 HOME = Path.home()
 HYPR = HOME / ".config/hypr"
 LOCAL = HYPR / "cursor.local.lua"
@@ -364,7 +399,7 @@ def set_ini(path: Path, key: str, value: str) -> None:
     buf = io.StringIO()
     cp.write(buf, space_around_delimiters=False)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(buf.getvalue())
+    write_safely(path, buf.getvalue())
 
 
 HOLD_DEFAULT, HOLD_MIN, HOLD_MAX = 0.35, 0.1, 3.0
@@ -382,12 +417,20 @@ def hold() -> float:
         return HOLD_DEFAULT
 
 
-def shaker_running() -> bool:
+def shaker_pid() -> int:
+    """the shake helper's pid, only if that process really is the helper (after
+    it is gone its pid number can belong to any other program of yours)"""
     try:
-        os.kill(int(SHAKE_PID.read_text()), 0)
-        return True
+        pid = int(SHAKE_PID.read_text())
+        if b"yakushi-shake.py" in Path(f"/proc/{pid}/cmdline").read_bytes():
+            return pid
     except (OSError, ValueError):
-        return False
+        pass
+    return 0
+
+
+def shaker_running() -> bool:
+    return shaker_pid() != 0
 
 
 def start_shaker() -> None:
@@ -398,10 +441,12 @@ def start_shaker() -> None:
 
 
 def stop_shaker() -> None:
-    try:
-        os.kill(int(SHAKE_PID.read_text()), signal.SIGTERM)
-    except (OSError, ValueError):
-        pass
+    pid = shaker_pid()
+    if pid:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError:
+            pass
 
 
 def write_local(theme: dict | None, tid: str, sz: int, shake: bool, stay: float | None = None) -> None:
@@ -417,7 +462,7 @@ def write_local(theme: dict | None, tid: str, sz: int, shake: bool, stay: float 
     if hypr_kind:
         lines += [f'hl.env("HYPRCURSOR_THEME", "{tid}")', f'hl.env("HYPRCURSOR_SIZE", "{sz}")']
     HYPR.mkdir(parents=True, exist_ok=True)
-    LOCAL.write_text("\n".join(lines) + "\n")
+    write_safely(LOCAL, "\n".join(lines) + "\n")
 
 
 def theme_by_id(tid: str) -> dict | None:

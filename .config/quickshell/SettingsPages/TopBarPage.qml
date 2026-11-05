@@ -219,6 +219,7 @@ Item {
 
             // ---------------- Style ----------------
             Text {
+                textFormat: Text.PlainText
                 text: "STYLE"
                 color: Theme.inkSoft
                 font.family: Theme.mono
@@ -308,6 +309,7 @@ Item {
                             spacing: 3
 
                             Text {
+                                textFormat: Text.PlainText
                                 text: card.modelData.name
                                 color: card.selected ? Theme.ink : Theme.inkSoft
                                 font.family: Theme.mono
@@ -316,6 +318,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width
                                 text: card.modelData.note
                                 elide: Text.ElideRight
@@ -355,6 +358,7 @@ Item {
                 height: 14
 
                 Text {
+                    textFormat: Text.PlainText
                     text: "MODULES  ·  LEFT TO RIGHT"
                     color: Theme.inkSoft
                     font.family: Theme.mono
@@ -363,6 +367,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.right: parent.right
                     visible: page.island
                     text: "RESET ORDER"
@@ -383,6 +388,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.right: parent.right
                     visible: !page.island
                     text: "ISLAND ONLY"
@@ -449,6 +455,7 @@ Item {
                                 border.color: arrowMouse.containsMouse && usable ? Theme.accent : Theme.line
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     text: String.fromCodePoint(modelData.glyph)
                                     color: parent.usable ? Theme.inkSoft : Theme.inkMute
@@ -492,6 +499,7 @@ Item {
                 Text {
                     id: vizIcon
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     width: 22
@@ -502,6 +510,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: vizIcon.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Music visualizer"
@@ -538,6 +547,7 @@ Item {
                             Text {
                                 id: segText
 
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: parent.modelData.name
                                 color: parent.selected ? Theme.ink : Theme.inkSoft
@@ -572,6 +582,7 @@ Item {
 
             // ---------------- Clock ----------------
             Text {
+                textFormat: Text.PlainText
                 text: "CLOCK"
                 color: Theme.inkSoft
                 font.family: Theme.mono
@@ -637,6 +648,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: page.status !== ""
                     ? page.status

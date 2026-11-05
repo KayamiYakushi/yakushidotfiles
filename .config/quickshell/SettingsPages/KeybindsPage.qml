@@ -239,6 +239,7 @@ Item {
             : Theme.line
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.leftMargin: 13
             anchors.verticalCenter: parent.verticalCenter
@@ -249,6 +250,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: searchInput.text === ""
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
@@ -278,6 +280,7 @@ Item {
 
     Text {
         id: statusLine
+        textFormat: Text.PlainText
         anchors.top: searchBox.bottom
         anchors.topMargin: 8
         anchors.left: parent.left
@@ -292,6 +295,7 @@ Item {
 
     Text {
         id: helpLine
+        textFormat: Text.PlainText
         anchors.top: statusLine.bottom
         anchors.topMargin: 3
         anchors.left: parent.left
@@ -363,6 +367,7 @@ Item {
                 opacity: bindRow.bindEnabled ? 1.0 : 0.45
 
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: bindRow.label
                     color: bindRow.danger ? Theme.alert : Theme.ink
@@ -372,6 +377,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     text: bindRow.category.toUpperCase()
                     color: Theme.inkMute
                     font.family: Theme.mono
@@ -424,6 +430,7 @@ Item {
                             Text {
                                 id: capText
 
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -1
                                 text: parent.modelData

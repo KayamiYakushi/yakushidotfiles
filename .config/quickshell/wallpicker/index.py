@@ -27,13 +27,20 @@ if root.exists():
         name = f"{safe_stem}-{digest}{p.suffix.lower()}"
         wanted[name] = p
 
-# Remove stale links/files from the generated index.
-for entry in index.iterdir():
-    if entry.name not in wanted:
-        try:
-            entry.unlink()
-        except OSError:
-            pass
+# Remove stale links/files from the generated index, and the thumbnails of
+# pictures that are gone (they would only fill the disk).
+thumbs = home / ".cache" / "quickshell" / "thumbs"
+for folder in (index, thumbs):
+    try:
+        entries = list(folder.iterdir())
+    except OSError:
+        continue
+    for entry in entries:
+        if entry.name not in wanted:
+            try:
+                entry.unlink()
+            except OSError:
+                pass
 
 # Create stable symlinks to the real files in Documents.
 for name, src in wanted.items():

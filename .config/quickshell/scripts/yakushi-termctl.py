@@ -51,6 +51,41 @@ import subprocess
 import sys
 from pathlib import Path
 
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
+
 HOME = Path.home()
 CONFIG = HOME / ".config"
 STATE = CONFIG / "quickshell/yakushi-term.local.json"
@@ -258,7 +293,7 @@ def ensure_line(path: Path, line: str, at_top: bool = False) -> None:
         if text and not text.endswith("\n"):
             text += "\n"
         text += line + "\n"
-    path.write_text(text)
+    write_safely(path, text)
 
 
 def remove_lines(path: Path) -> None:
@@ -268,7 +303,7 @@ def remove_lines(path: Path) -> None:
         if cleaned.strip() == "":
             path.unlink()          # we created it; nothing of the user's in it
         elif cleaned != text:
-            path.write_text(cleaned)
+            write_safely(path, cleaned)
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +406,7 @@ def apply_alacritty(p: dict) -> str:
         if conf.exists():
             shutil.copy2(conf, conf.with_name(conf.name + ".yakushi-before"))
         text = re.sub(r"^(\s*\[general\]\s*)$", r"\1\n" + entry.replace("\\", "\\\\"), text, count=1, flags=re.M)
-        conf.write_text(text)
+        write_safely(conf, text)
     else:
         ensure_line(conf, f"[general]  # {MARK}\n{entry}", at_top=True)
     return "alacritty"
@@ -518,7 +553,7 @@ def ensure_hypr_include() -> None:
         text = text[:match.end()] + line + text[match.end():]
     else:
         text = text.rstrip("\n") + "\n\n" + line
-    HYPR_CONF.write_text(text)
+    write_safely(HYPR_CONF, text)
 
 
 def hyprctl(*args: str) -> bool:
@@ -539,7 +574,7 @@ def apply_hypr(state: dict) -> None:
     if new == old:
         return
     HYPR_LOCAL.parent.mkdir(parents=True, exist_ok=True)
-    HYPR_LOCAL.write_text(new)
+    write_safely(HYPR_LOCAL, new)
     ensure_hypr_include()
     old_rules = old.split(")\n", 1)[1] if old and ")\n" in old else None
     if old is None or old_rules != rules:
@@ -655,7 +690,7 @@ def undo_old_fish(state: dict) -> None:
 def apply_fish(p: dict, state: dict) -> str:
     undo_old_fish(state)
     FISH_CONF.parent.mkdir(parents=True, exist_ok=True)
-    FISH_CONF.write_text(FISH_SNIPPET)
+    write_safely(FISH_CONF, FISH_SNIPPET)
     pairs = " ".join(fish_quote(f"{k}={v}") for k, v in fish_values(p).items())
     fish(f"set -U yakushi_colors {pairs}")
     return "fish"

@@ -34,6 +34,7 @@ Item {
         spacing: 7
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: m.media.playing ? String.fromCodePoint(0xF040A) : String.fromCodePoint(0xF03E4)
             color: m.hovered || m.active ? Theme.accent : Theme.inkSoft

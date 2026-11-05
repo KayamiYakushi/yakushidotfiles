@@ -21,6 +21,7 @@ Rectangle {
         spacing: 7
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: hb.icon
             color: hbMouse.containsMouse ? Theme.accent : Theme.inkSoft
@@ -29,6 +30,7 @@ Rectangle {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: hb.label
             color: hbMouse.containsMouse ? Theme.ink : Theme.inkSoft

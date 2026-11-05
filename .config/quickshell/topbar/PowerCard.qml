@@ -3,7 +3,8 @@ import QtQuick
 import "../"
 
 // Power menu that drops down from the island below the power button.
-// Lock and Suspend act at once; Log out, Restart and Shut down ask for a
+// Lock and Suspend act at once (Suspend locks the screen first, so the
+// computer never wakes up unlocked); Log out, Restart and Shut down ask for a
 // second click (or Enter) within a few seconds, so a stray click is harmless.
 //
 // Keyboard (when opened with the shortcut): Left/Right or Tab to move,
@@ -20,7 +21,8 @@ Item {
         { key: "lock",     label: "Lock",      glyph: 0xF033E, confirm: false,
           args: ["sh", "-c", "pidof hyprlock >/dev/null || exec hyprlock"] },
         { key: "suspend",  label: "Suspend",   glyph: 0xF04B2, confirm: false,
-          args: ["systemctl", "suspend"] },
+          args: ["sh", "-c", "pidof hyprlock >/dev/null || { setsid hyprlock >/dev/null 2>&1 & sleep 0.8; }; "
+                 + "exec systemctl suspend"] },
         { key: "logout",   label: "Log out",   glyph: 0xF0343, confirm: true,
           args: ["sh", "-c",
                  "out=$(hyprctl eval 'hl.dispatch(hl.dsp.exit())' 2>&1); "
@@ -117,6 +119,7 @@ Item {
         height: 16
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: card.armedIndex >= 0
@@ -129,6 +132,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: card.uptime
@@ -190,6 +194,7 @@ Item {
                     spacing: 6
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: String.fromCodePoint(tile.modelData.glyph)
                         color: tile.armed || tile.lit ? tile.tone : Theme.ink
@@ -202,6 +207,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: tile.armed ? "Sure?" : tile.modelData.label
                         color: tile.armed ? Theme.alert : (tile.lit ? Theme.ink : Theme.inkSoft)

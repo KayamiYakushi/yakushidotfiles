@@ -49,10 +49,15 @@ Item {
         try {
             data = JSON.parse(raw)
         } catch (e) {
-            // Caught the file mid-write: read it again shortly.
-            retry.restart()
+            // Caught the file mid-write: read it again shortly (a few times
+            // only: a broken file must not keep the bar busy forever).
+            if (retries < 5) {
+                retries += 1
+                retry.restart()
+            }
             return
         }
+        retries = 0
 
         if (!data || typeof data !== "object")
             return
@@ -109,6 +114,8 @@ Item {
         }
     }
 
+    property int retries: 0
+
     Timer {
         id: retry
         interval: 150
@@ -123,7 +130,10 @@ Item {
         watchChanges: true
         printErrors: false
 
-        onFileChanged: reload()
+        onFileChanged: {
+            cfg.retries = 0
+            reload()
+        }
         onLoaded: cfg.apply(text())
     }
 

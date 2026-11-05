@@ -37,6 +37,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: m.icon !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: m.icon
@@ -50,6 +51,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: m.label !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: m.label

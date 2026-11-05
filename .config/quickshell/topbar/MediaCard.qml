@@ -67,6 +67,7 @@ Item {
         color: Theme.groove
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: cover.status !== Image.Ready
             text: String.fromCodePoint(0xF075A)
@@ -157,6 +158,7 @@ Item {
         Text {
             id: elapsed
 
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             width: 34
@@ -169,6 +171,7 @@ Item {
         Text {
             id: remaining
 
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             width: 38
@@ -237,6 +240,7 @@ Item {
             delegate: Text {
                 id: control
 
+                textFormat: Text.PlainText
                 required property var modelData
 
                 anchors.verticalCenter: parent.verticalCenter

@@ -430,6 +430,7 @@ Item {
     }
 
     component SectionLabel: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 11
@@ -475,6 +476,7 @@ Item {
                 SectionLabel { text: "APPS" }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: "GTK 3 · GTK 4 · Files · Firefox"
                     color: Theme.inkMute
@@ -564,6 +566,7 @@ Item {
                                 spacing: 8
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: schemeCard.modelData.label
                                     color: schemeCard.selected ? Theme.accent : Theme.ink
                                     font.family: Theme.mono
@@ -573,6 +576,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: schemeCard.modelData.jp
                                     color: Theme.inkSoft
@@ -582,6 +586,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width
                                 text: schemeCard.modelData.hint
                                 color: Theme.inkSoft
@@ -604,6 +609,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 visible: page.schemeNote !== ""
                 width: parent.width
                 text: page.schemeNote
@@ -658,6 +664,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 text: modelData.name
                                 color: parent.parent.selected ? Theme.ink : Theme.inkSoft
                                 font.family: Theme.mono
@@ -687,6 +694,7 @@ Item {
                 Text {
                     id: customIcon
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     width: 22
@@ -697,6 +705,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: customIcon.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Custom colour"
@@ -907,6 +916,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: cornerCard.modelData.name
                                 color: cornerCard.selected ? Theme.ink : Theme.inkSoft
@@ -1034,6 +1044,7 @@ Item {
                 Text {
                     id: borderColourIcon
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     width: 22
@@ -1044,6 +1055,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: borderColourIcon.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Border colour"
@@ -1083,6 +1095,7 @@ Item {
                             Text {
                                 id: accentLabel
 
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "ACCENT"
                                 color: parent.parent.selected ? Theme.ink : Theme.inkSoft
@@ -1149,6 +1162,7 @@ Item {
                             selectByMouse: true
 
                             Text {
+                                textFormat: Text.PlainText
                                 visible: borderHexInput.text === "" && !borderHexInput.activeFocus
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "#rrggbb"
@@ -1176,6 +1190,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: "Shadows cost a little GPU time; turn them off for the lightest setup."
                 color: Theme.inkMute
@@ -1249,6 +1264,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: page.termDetected
                 color: Theme.inkSoft
@@ -1258,6 +1274,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: page.termStatus !== ""
                     ? page.termStatus
@@ -1270,6 +1287,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 visible: page.launcherStatus !== "" || page.windowStatus !== ""
                 width: parent.width
                 text: page.windowStatus !== "" ? page.windowStatus : page.launcherStatus

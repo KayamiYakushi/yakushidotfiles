@@ -58,6 +58,8 @@ case "$choice" in
         pidof hyprlock >/dev/null || setsid hyprlock >/dev/null 2>&1 &
         ;;
     1)
+        # lock first, so the computer never wakes up unlocked
+        pidof hyprlock >/dev/null || { setsid hyprlock >/dev/null 2>&1 & sleep 0.8; }
         systemctl suspend
         ;;
     2)

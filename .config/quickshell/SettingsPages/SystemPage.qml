@@ -287,6 +287,7 @@ Item {
                 Text {
                     id: plus
 
+                    textFormat: Text.PlainText
                     visible: shot.status !== Image.Ready
                     anchors.horizontalCenter: parent.horizontalCenter
                     y: 46
@@ -297,6 +298,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: plus.visible
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: plus.bottom
@@ -317,6 +319,7 @@ Item {
                     color: Theme.accent
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: "CHANGE ──"
                         color: page.onAccent
@@ -352,6 +355,7 @@ Item {
                 Text {
                     id: tag
 
+                    textFormat: Text.PlainText
                     y: 2
                     text: "// HOST"
                     color: Theme.accent
@@ -363,6 +367,7 @@ Item {
                 Text {
                     id: hostName
 
+                    textFormat: Text.PlainText
                     anchors.top: tag.bottom
                     anchors.topMargin: 4
                     width: parent.width
@@ -376,6 +381,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.top: hostName.bottom
                     anchors.topMargin: 2
                     width: parent.width
@@ -423,6 +429,7 @@ Item {
                             Text {
                                 id: key
 
+                                textFormat: Text.PlainText
                                 x: 14
                                 y: 9
                                 text: parent.modelData.k
@@ -434,6 +441,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 x: 14
                                 anchors.top: key.bottom
                                 anchors.topMargin: 5
@@ -458,6 +466,7 @@ Item {
             Text {
                 id: hwLabel
 
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: "HARDWARE"
                 color: Theme.inkSoft
@@ -470,6 +479,7 @@ Item {
             Text {
                 id: hwJp
 
+                textFormat: Text.PlainText
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 text: "ハードウェア"
@@ -517,6 +527,7 @@ Item {
                     Text {
                         id: cellTag
 
+                        textFormat: Text.PlainText
                         x: 16
                         y: 14
                         text: cell.modelData.tag
@@ -527,6 +538,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: cellTag.right
                         anchors.leftMargin: 10
                         anchors.baseline: cellTag.baseline
@@ -539,6 +551,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.right: parent.right
                         anchors.rightMargin: 16
                         y: 8
@@ -553,6 +566,7 @@ Item {
                     Text {
                         id: cellValue
 
+                        textFormat: Text.PlainText
                         x: 16
                         anchors.top: cellTag.bottom
                         anchors.topMargin: 12
@@ -567,6 +581,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         x: 16
                         anchors.top: cellValue.bottom
                         anchors.topMargin: 4

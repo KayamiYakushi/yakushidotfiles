@@ -2,11 +2,47 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
 
 HOME = Path.home()
 KEYBINDS = HOME / ".config/hypr/keybinds.lua"
@@ -41,7 +77,7 @@ def disabled_ids():
 def write_disabled(values):
     values = sorted(set(values))
     DISABLED.parent.mkdir(parents=True, exist_ok=True)
-    DISABLED.write_text(
+    write_safely(DISABLED, 
         ("\n".join(values) + "\n") if values else ""
     )
 
@@ -251,7 +287,7 @@ def set_combo(bind_id, combo):
 
         escaped = combo.replace("\\", "\\\\").replace('"', '\\"')
         lines[idx] = f'{match.group(1)}"{escaped}"{match.group(5)}'
-        KEYBINDS.write_text("\n".join(lines) + "\n")
+        write_safely(KEYBINDS, "\n".join(lines) + "\n")
 
     mutate_then_reload(do_change)
 

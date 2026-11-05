@@ -180,6 +180,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: btn.label
             color: btn.primary ? Theme.ink : Theme.inkSoft
@@ -263,6 +264,7 @@ Item {
             height: 32
 
             Text {
+                textFormat: Text.PlainText
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "CHOOSE IMAGE"
@@ -354,6 +356,7 @@ Item {
                         spacing: 10
 
                         Text {
+                            textFormat: Text.PlainText
                             text: place.modelData.icon
                             color: place.active ? Theme.accent : Theme.inkSoft
                             font.family: Theme.glyphs
@@ -361,6 +364,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             text: place.modelData.name
                             color: place.active ? Theme.ink : Theme.inkSoft
                             font.family: Theme.mono
@@ -380,6 +384,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.leftMargin: 24
             anchors.bottom: parent.bottom
@@ -455,6 +460,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
@@ -492,6 +498,7 @@ Item {
                         Keys.onEnterPressed: picker.accept()
 
                         Text {
+                            textFormat: Text.PlainText
                             visible: searchInput.text.length === 0
                             anchors.verticalCenter: parent.verticalCenter
                             text: "SEARCH"
@@ -515,6 +522,7 @@ Item {
                     border.color: Theme.line
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.right: parent.right
@@ -541,6 +549,7 @@ Item {
                 Text {
                     id: resultCount
 
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "0 ITEMS"
@@ -668,6 +677,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     visible: row.is_dir
                                     text: "󰉋"
@@ -683,6 +693,7 @@ Item {
                                 spacing: 4
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: parent.width
                                     text: row.name
                                     color: Theme.ink
@@ -692,6 +703,7 @@ Item {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: row.is_dir ? "FOLDER" : "IMAGE"
                                     color: Theme.inkSoft
                                     font.family: Theme.mono
@@ -729,6 +741,7 @@ Item {
 
                 // Empty state
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     visible: entriesModel.count === 0 && !listProc.running
                     text: picker.searchText !== ""

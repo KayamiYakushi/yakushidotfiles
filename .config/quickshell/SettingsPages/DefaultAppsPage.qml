@@ -50,11 +50,36 @@ Item {
     function choose(key, id) {
         if (busy)
             return
+        if (key === "shell") {
+            if (id === shellInfo.current) {
+                status = "Already your login shell."
+                return
+            }
+            // the login shell is a system setting: your password, asked right
+            // here (no dialog that could open behind Settings)
+            pendingShell = id
+            passwordAsk.error = ""
+            Qt.callLater(passwordAsk.open)
+            return
+        }
         busy = true
         status = "Saving..."
-        setProc.command = key === "shell"
-            ? ["python3", helper, "shell", id]
-            : ["python3", helper, "set", key, id]
+        setProc.stdinEnabled = false
+        setProc.command = ["python3", helper, "set", key, id]
+        setProc.running = true
+    }
+
+    property string pendingShell: ""      // the shell waiting for your password
+    property string lastShell: ""
+    property string secret: ""
+
+    function setShell(id, password) {
+        busy = true
+        status = "Changing the login shell..."
+        lastShell = id
+        secret = password
+        setProc.stdinEnabled = true
+        setProc.command = ["python3", helper, "--password-stdin", "shell", id]
         setProc.running = true
     }
 
@@ -86,11 +111,26 @@ Item {
     Process {
         id: setProc
 
+        onStarted: {
+            if (stdinEnabled) {
+                setProc.write(page.secret + "\n")
+                page.secret = ""
+                stdinEnabled = false
+            }
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 page.busy = false
                 try {
                     var d = JSON.parse(text)
+                    if (d.wrongPassword) {
+                        page.status = ""
+                        page.pendingShell = page.lastShell
+                        passwordAsk.error = "Wrong password. Try again."
+                        Qt.callLater(passwordAsk.open)
+                        return
+                    }
                     page.status = d.message || ""
                     if (!d.ok)
                         return
@@ -149,6 +189,7 @@ Item {
     Text {
         id: statusText
 
+        textFormat: Text.PlainText
         anchors.top: headerRow.bottom
         anchors.topMargin: 10
         anchors.left: parent.left
@@ -160,6 +201,27 @@ Item {
         elide: Text.ElideRight
     }
 
+    PasswordRow {
+        id: passwordAsk
+
+        anchors.top: statusText.bottom
+        anchors.topMargin: 10
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: page.pendingShell !== ""
+        label: "Your password, to make " + page.pendingShell.split("/").pop() + " your login shell"
+        action: "CHANGE"
+        onAccepted: function(password) {
+            var id = page.pendingShell
+            page.pendingShell = ""
+            page.setShell(id, password)
+        }
+        onCanceled: {
+            page.pendingShell = ""
+            page.status = "Cancelled. The login shell was not changed."
+        }
+    }
+
     ScrollHint {
         flick: flick
     }
@@ -167,7 +229,7 @@ Item {
     Flickable {
         id: flick
 
-        anchors.top: statusText.bottom
+        anchors.top: passwordAsk.visible ? passwordAsk.bottom : statusText.bottom
         anchors.topMargin: 14
         anchors.left: parent.left
         anchors.right: parent.right
@@ -233,6 +295,7 @@ Item {
                         Text {
                             id: idx
 
+                            textFormat: Text.PlainText
                             anchors.left: parent.left
                             anchors.leftMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -246,6 +309,7 @@ Item {
                         Text {
                             id: catGlyph
 
+                            textFormat: Text.PlainText
                             anchors.left: idx.right
                             anchors.leftMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
@@ -257,6 +321,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: catGlyph.right
                             anchors.leftMargin: 12
                             anchors.verticalCenter: parent.verticalCenter
@@ -271,6 +336,7 @@ Item {
                         Text {
                             id: chevron
 
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -304,6 +370,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: block.modelData.currentName !== ""
                                     ? block.modelData.currentName
@@ -377,6 +444,7 @@ Item {
                                     }
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: chip.modelData.name
                                         color: chip.selected ? Theme.accent : Theme.ink
@@ -386,6 +454,7 @@ Item {
                                     }
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         visible: block.isShell
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: chip.modelData.path || ""
@@ -416,6 +485,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: body.width
                 text: "Files and links open with your choice (mimeapps.list). Terminal, file manager and browser are also what SUPER + Q / E / B open. Changing the shell asks for your password; it applies after you log out and back in."
                 wrapMode: Text.WordWrap

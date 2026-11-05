@@ -34,6 +34,7 @@ Rectangle {
     Text {
         id: lock
 
+        textFormat: Text.PlainText
         x: 12
         anchors.verticalCenter: parent.verticalCenter
         text: String.fromCodePoint(0xF033E)
@@ -61,6 +62,7 @@ Rectangle {
         Keys.onEscapePressed: row.canceled()
 
         Text {
+            textFormat: Text.PlainText
             visible: field.text === ""
             anchors.verticalCenter: parent.verticalCenter
             text: row.error !== "" ? row.error : row.label
@@ -96,6 +98,7 @@ Rectangle {
                 Text {
                     id: bText
 
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: b.modelData[1]
                     color: b.modelData[0] === "ok" ? Theme.alert : Theme.inkSoft

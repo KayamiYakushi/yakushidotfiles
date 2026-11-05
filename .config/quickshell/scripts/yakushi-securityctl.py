@@ -64,9 +64,9 @@ def emit(obj: dict) -> None:
     print(json.dumps(obj))
 
 
-def run(cmd: list[str], timeout: int = 60) -> subprocess.CompletedProcess:
+def run(cmd: list[str], timeout: int = 60, env: dict | None = None) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
     except FileNotFoundError:
         return subprocess.CompletedProcess(cmd, 127, "", f"{cmd[0]} is not installed")
     except subprocess.TimeoutExpired:
@@ -194,7 +194,11 @@ AUDIT = re.compile(r"^Package (\S+) is affected by (.+?)\.\s+(\w+) risk!(?:\s+Up
 def check_updates() -> dict:
     result = {"time": int(time.time()), "pending": [], "holes": [], "errors": []}
     if have("checkupdates"):
-        res = run(["checkupdates"], 180)
+        # its copy of the package lists lives in ~/.cache, not in /tmp (which is
+        # RAM): it stays small there, and the next check downloads only what changed
+        db = HOME / ".cache/yakushi/checkup-db"
+        db.mkdir(parents=True, exist_ok=True)
+        res = run(["checkupdates"], 180, env={**os.environ, "CHECKUPDATES_DB": str(db)})
         if res.returncode in (0, 2):            # 2 = no updates
             for line in res.stdout.splitlines():
                 p = line.split()

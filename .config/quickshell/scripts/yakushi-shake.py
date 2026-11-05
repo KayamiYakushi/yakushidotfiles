@@ -133,10 +133,9 @@ def main() -> None:
         return
 
     PIDFILE.parent.mkdir(parents=True, exist_ok=True)
-    try:                                   # one copy only
-        old = int(PIDFILE.read_text())
-        if old != os.getpid():
-            os.kill(old, 0)
+    try:                                   # one copy only (and really a copy of us:
+        old = int(PIDFILE.read_text())     # a pid number gets reused by other programs)
+        if old != os.getpid() and b"yakushi-shake.py" in Path(f"/proc/{old}/cmdline").read_bytes():
             return
     except (OSError, ValueError):
         pass

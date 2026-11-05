@@ -31,11 +31,15 @@ Item {
 
     // ---- one helper call at a time
     property bool again: false        // a refresh asked for while busy
+    property var queued: null         // an action pressed while busy: runs next
+    property string pending: ""       // a Wi-Fi password on its way (stdin, never a command line)
 
-    function call(args, busyText) {
+    function call(args, busyText, password) {
         if (worker.running) {
             if (args[0] === "state")
                 again = true
+            else
+                queued = { args: args, busyText: busyText, password: password || "" }
             return
         }
         busy = true
@@ -43,7 +47,9 @@ Item {
             note = busyText
             noteClear.stop()
         }
-        worker.command = ["python3", helper].concat(args)
+        pending = password || ""
+        worker.stdinEnabled = pending !== ""
+        worker.command = ["python3", helper].concat(pending !== "" ? ["--password-stdin"] : []).concat(args)
         worker.running = true
     }
 
@@ -55,6 +61,14 @@ Item {
 
     Process {
         id: worker
+
+        onStarted: {
+            if (stdinEnabled) {
+                worker.write(page.pending + "\n")
+                page.pending = ""
+                stdinEnabled = false
+            }
+        }
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -80,7 +94,13 @@ Item {
         }
 
         onRunningChanged: {
-            if (!running && page.again) {
+            if (running)
+                return
+            if (page.queued !== null) {
+                var next = page.queued
+                page.queued = null
+                Qt.callLater(function() { page.call(next.args, next.busyText, next.password) })
+            } else if (page.again) {
                 page.again = false
                 Qt.callLater(function() { page.call(["state"]) })
             }
@@ -341,6 +361,7 @@ Item {
     Text {
         id: noteLine
 
+        textFormat: Text.PlainText
         anchors.top: rule.bottom
         anchors.topMargin: text === "" ? 0 : 10
         anchors.left: head.left
@@ -355,6 +376,7 @@ Item {
     }
 
     component SectionTitle: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 10
@@ -369,6 +391,7 @@ Item {
         spacing: 2
 
         Text {
+            textFormat: Text.PlainText
             text: parent.key
             color: Theme.inkMute
             font.family: Theme.mono
@@ -380,6 +403,7 @@ Item {
             spacing: 4
 
             Text {
+                textFormat: Text.PlainText
                 text: parent.parent.value
                 color: Theme.ink
                 font.family: Theme.mono
@@ -387,6 +411,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.baseline: parent.children[0].baseline
                 text: parent.parent.unit
                 color: Theme.inkSoft
@@ -449,6 +474,7 @@ Item {
                         color: page.primary ? Theme.tint(Theme.accent, 0.18) : Theme.tint(Theme.ink, 0.05)
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: !page.primary ? String.fromCodePoint(0xF0318)
                                 : status.viaWifi ? page.bars(page.primary.signal || 0)
@@ -462,6 +488,7 @@ Item {
                     Text {
                         id: viaKind
 
+                        textFormat: Text.PlainText
                         anchors.left: viaBadge.right
                         anchors.leftMargin: 12
                         anchors.right: parent.right
@@ -475,6 +502,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: viaKind.left
                         anchors.right: parent.right
                         anchors.top: viaKind.bottom
@@ -487,6 +515,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
@@ -541,6 +570,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.right: testButton.left
                         anchors.rightMargin: 12
@@ -573,6 +603,7 @@ Item {
                         Text {
                             id: testText
 
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: page.testing ? "TESTING…" : "TEST SPEED"
                             color: Theme.ink
@@ -604,6 +635,7 @@ Item {
                 border.color: Theme.line
 
                 Text {
+                    textFormat: Text.PlainText
                     x: 14
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: narrowTest.left
@@ -634,6 +666,7 @@ Item {
                     Text {
                         id: narrowText
 
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: page.testing ? "TESTING…" : "TEST SPEED"
                         color: Theme.ink
@@ -731,6 +764,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 visible: page.loaded && page.wifiDevice !== "" && (!page.radio || page.nets.length === 0)
                 width: rows.width
                 topPadding: 6
@@ -743,6 +777,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 visible: page.loaded && page.wifiDevice === "" && page.wired.length === 0
                 width: rows.width
                 topPadding: 20
@@ -801,17 +836,24 @@ Item {
                         visible: entry.asked
                         width: parent.width
                         height: 44
+
+                        // type right away: the line takes the keyboard when it opens
+                        onVisibleChanged: if (visible) Qt.callLater(function() { secret.forceActiveFocus() })
                         color: Theme.card
                         border.width: 1
                         border.color: secret.activeFocus ? Theme.accent : Theme.line
 
                         function join() {
-                            page.call(["join", entry.modelData.ssid, secret.text], "Connecting to " + entry.modelData.ssid + "...")
+                            if (secret.text === "")
+                                return
+                            page.call(["join", entry.modelData.ssid], "Connecting to " + entry.modelData.ssid + "...", secret.text)
+                            secret.text = ""
                         }
 
                         Text {
                             id: key
 
+                            textFormat: Text.PlainText
                             x: 14
                             anchors.verticalCenter: parent.verticalCenter
                             text: String.fromCodePoint(0xF033E)
@@ -840,6 +882,7 @@ Item {
                             Keys.onEscapePressed: page.asking = ""
 
                             Text {
+                                textFormat: Text.PlainText
                                 visible: secret.text === ""
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Password for " + entry.modelData.ssid
@@ -864,6 +907,7 @@ Item {
                             Text {
                                 id: joinText
 
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: "JOIN"
                                 color: Theme.ink

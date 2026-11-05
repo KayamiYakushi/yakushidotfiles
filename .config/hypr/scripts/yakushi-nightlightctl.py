@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""Night light for Settings -> Monitors, through hyprsunset.
+
+    status | restore | set TEMPERATURE | temperature TEMPERATURE | off
+
+hyprsunset runs only while night light is on: `set` (and `restore` at login,
+when it was on) starts it with the temperature, `off` stops it (the screen
+colours come back by themselves when it exits). Nothing stays running while
+night light is off.
+"""
 from __future__ import annotations
 
 import json
@@ -60,6 +69,41 @@ def emit(ok: bool, state: dict, message: str = "") -> int:
     return 0 if ok else 1
 
 
+def running() -> bool:
+    try:
+        return subprocess.run(["pgrep", "-x", "-u", str(os.getuid()), "hyprsunset"],
+                              capture_output=True, timeout=3).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def start_daemon(temperature: int) -> tuple[bool, str]:
+    """hyprsunset, already at this temperature (no IPC round needed)"""
+    try:
+        subprocess.Popen(["hyprsunset", "-t", str(temperature)], stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    except OSError:
+        return False, "hyprsunset is not installed."
+    return True, ""
+
+
+def stop_daemon() -> None:
+    try:
+        subprocess.run(["pkill", "-x", "-u", str(os.getuid()), "hyprsunset"], capture_output=True, timeout=3)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def warm(temperature: int) -> tuple[bool, str]:
+    """night light at this temperature: hyprsunset is told, or started"""
+    if running():
+        ok, message = run_hyprsunset("temperature", str(temperature))
+        if ok:
+            return ok, message
+        stop_daemon()                            # it does not answer: a fresh one
+    return start_daemon(temperature)
+
+
 def run_hyprsunset(*args: str) -> tuple[bool, str]:
     try:
         result = subprocess.run(
@@ -107,13 +151,12 @@ def main() -> int:
 
     if command == "restore":
         if state["enabled"]:
-            ok, message = run_hyprsunset(
-                "temperature", str(state["temperature"])
-            )
+            ok, message = warm(state["temperature"])
             return emit(ok, state, message or "Night Light restored.")
 
-        ok, message = run_hyprsunset("identity")
-        return emit(ok, state, message or "Night Light is disabled.")
+        if running():                            # nothing to do while it is off
+            stop_daemon()
+        return emit(True, state, "Night Light is disabled.")
 
     if command == "set":
         if len(sys.argv) != 3:
@@ -124,7 +167,7 @@ def main() -> int:
         candidate["enabled"] = True
         candidate["temperature"] = temperature
 
-        ok, message = run_hyprsunset("temperature", str(temperature))
+        ok, message = warm(temperature)
         if not ok:
             return emit(False, state, message)
 
@@ -142,7 +185,7 @@ def main() -> int:
         candidate["temperature"] = temperature
 
         if state["enabled"]:
-            ok, message = run_hyprsunset("temperature", str(temperature))
+            ok, message = warm(temperature)
             if not ok:
                 return emit(False, state, message)
 
@@ -150,9 +193,9 @@ def main() -> int:
         return emit(True, candidate, "Night Light temperature saved.")
 
     if command == "off":
-        ok, message = run_hyprsunset("identity")
-        if not ok:
-            return emit(False, state, message)
+        if running():
+            run_hyprsunset("identity")           # at once, then nothing left running
+            stop_daemon()
 
         state["enabled"] = False
         save_state(state)

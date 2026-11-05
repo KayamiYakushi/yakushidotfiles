@@ -6,7 +6,10 @@ Commands (each prints one JSON object):
                             which connection carries the internet
     scan                    ask for a fresh Wi-Fi scan first, then `state`
     radio on|off            switch Wi-Fi
-    join <ssid> [pass]      connect to a Wi-Fi network
+    join <ssid>             connect to a Wi-Fi network; with --password-stdin
+                            the password is the first line of stdin (Settings
+                            sends it that way: a command line can be read by
+                            any program on the computer, stdin cannot)
     up <uuid>               connect a saved connection (no password needed)
     down <uuid>             disconnect that connection
     wired <device> up|down  connect / disconnect a cable
@@ -27,7 +30,6 @@ from __future__ import annotations
 
 import ipaddress
 import json
-import os
 import subprocess
 import sys
 import time
@@ -40,13 +42,27 @@ TYPES = {"802-3-ethernet": "ethernet", "802-11-wireless": "wifi"}
 
 
 # ---- nmcli ---------------------------------------------------------------------
-def nmcli(*args: str, timeout: int = 30) -> subprocess.CompletedProcess:
+def nmcli(*args: str, timeout: int = 30, given: str | None = None) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(["nmcli", *args], capture_output=True, text=True, timeout=timeout)
+        return subprocess.run(["nmcli", *args], capture_output=True, text=True, timeout=timeout,
+                              input=given if given is not None else "")
     except FileNotFoundError:
         return subprocess.CompletedProcess(args, 127, "", "nmcli is not installed")
     except subprocess.TimeoutExpired:
         return subprocess.CompletedProcess(args, 124, "", "nmcli timed out")
+
+
+def join(ssid: str, password: str | None) -> subprocess.CompletedProcess:
+    """connect to a Wi-Fi network. The password goes to nmcli through its
+    --ask prompt on stdin, so it never shows up in the process list."""
+    if not password:
+        return nmcli("device", "wifi", "connect", ssid, timeout=60)
+    res = nmcli("--ask", "device", "wifi", "connect", ssid, timeout=60, given=password + "\n")
+    said = res.stdout + res.stderr
+    if res.returncode != 0 and "assword" not in said and "required to access" not in said:
+        # this nmcli never asked (so the password was not even tried): the plain way
+        res = nmcli("device", "wifi", "connect", ssid, "password", password, timeout=60)
+    return res
 
 
 def error_of(res: subprocess.CompletedProcess, fallback: str) -> str:
@@ -497,6 +513,10 @@ def speedtest() -> dict:
 # ---- commands ----------------------------------------------------------------------
 def main() -> None:
     a = sys.argv[1:]
+    password = None
+    if "--password-stdin" in a:                      # Settings sends the Wi-Fi password here
+        a = [x for x in a if x != "--password-stdin"]
+        password = sys.stdin.readline().rstrip("\n")
     if a == ["state"]:
         state()
     elif a == ["scan"]:
@@ -508,12 +528,12 @@ def main() -> None:
         time.sleep(0.5 if a[1] == "off" else 2.0)
         state()
     elif len(a) in (2, 3) and a[0] == "join":
-        cmd = ["device", "wifi", "connect", a[1]]
-        if len(a) == 3:
-            cmd += ["password", a[2]]
-        res = nmcli(*cmd, timeout=60)
+        res = join(a[1], a[2] if len(a) == 3 else password)
+        wrong = res.returncode != 0 and "Secrets were required" in res.stderr
         state(joined=res.returncode == 0,
-              message=f"Connected to {a[1]}." if res.returncode == 0 else error_of(res, "Could not connect."))
+              message=f"Connected to {a[1]}." if res.returncode == 0
+              else "Wrong password, or the network did not take it." if wrong
+              else error_of(res, "Could not connect."))
     elif len(a) == 2 and a[0] == "up":
         res = nmcli("connection", "up", a[1], timeout=60)
         state(joined=res.returncode == 0,
@@ -547,7 +567,7 @@ def main() -> None:
     elif a == ["speed"]:
         print(json.dumps(summary()))
     else:
-        print(json.dumps({"ok": False, "message": "usage: state | scan | radio on|off | join <ssid> [password] | "
+        print(json.dumps({"ok": False, "message": "usage: state | scan | radio on|off | join <ssid> [--password-stdin] | "
                                                   "up <uuid> | down <uuid> | wired <device> up|down | details <uuid> | "
                                                   "apply <uuid> <json> | forget <uuid> | speedtest | speed"}))
         raise SystemExit(1)

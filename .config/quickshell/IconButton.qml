@@ -19,6 +19,7 @@ Rectangle {
     border.color: mouse.containsMouse && available ? Theme.tint(Theme.accent, 0.6) : Theme.line
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: btn.glyph
         color: btn.busy || (mouse.containsMouse && btn.available) ? Theme.accent : Theme.inkSoft

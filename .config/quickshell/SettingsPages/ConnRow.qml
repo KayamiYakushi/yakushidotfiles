@@ -43,6 +43,7 @@ Rectangle {
         color: row.active ? Theme.tint(Theme.accent, 0.18) : Theme.tint(Theme.ink, 0.05)
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: row.glyph
             color: row.active ? Theme.accent : Theme.inkSoft
@@ -54,6 +55,7 @@ Rectangle {
     Text {
         id: name
 
+        textFormat: Text.PlainText
         anchors.left: badge.right
         anchors.leftMargin: 12
         anchors.right: tools.left
@@ -68,6 +70,7 @@ Rectangle {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.left: name.left
         anchors.right: name.right
         anchors.top: parent.verticalCenter
@@ -99,6 +102,7 @@ Rectangle {
             border.color: row.open ? Theme.accent : gearMouse.containsMouse ? Theme.lineHot : Theme.line
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: String.fromCodePoint(0xF0493)
                 color: row.open || gearMouse.containsMouse ? Theme.accent : Theme.inkSoft
@@ -131,6 +135,7 @@ Rectangle {
             Text {
                 id: label
 
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: row.action
                 color: row.danger ? Theme.alert : Theme.ink

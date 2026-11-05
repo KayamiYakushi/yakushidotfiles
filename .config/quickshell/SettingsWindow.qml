@@ -382,6 +382,7 @@ PanelWindow {
                     spacing: 12
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: "薬"
                         color: Theme.alert
@@ -391,6 +392,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: "SETTINGS"
                         color: Theme.ink
@@ -401,6 +403,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: "設定"
                         color: Theme.inkSoft
@@ -417,6 +420,7 @@ PanelWindow {
                     spacing: 14
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: settings.pages[settings.page].jp
                         color: Theme.inkSoft
@@ -433,6 +437,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: settings.two(settings.page + 1) + " / " + settings.two(settings.pages.length)
                         color: Theme.accent
@@ -502,6 +507,7 @@ PanelWindow {
                             Text {
                                 id: number
 
+                                textFormat: Text.PlainText
                                 x: 20
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: settings.two(line.index + 1)
@@ -512,6 +518,7 @@ PanelWindow {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.left: number.right
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
@@ -524,6 +531,7 @@ PanelWindow {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.right: parent.right
                                 anchors.rightMargin: 16
                                 anchors.verticalCenter: parent.verticalCenter
@@ -548,6 +556,7 @@ PanelWindow {
 
                 // 薬師 (Yakushi), large and faint; only where the list leaves room
                 Text {
+                    textFormat: Text.PlainText
                     x: 18
                     visible: y >= pageList.y + pageList.height + 8
                     anchors.bottom: listFoot.top
@@ -574,6 +583,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         x: 20
                         anchors.verticalCenter: parent.verticalCenter
                         text: "ESC ── CLOSE"

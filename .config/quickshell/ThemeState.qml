@@ -16,7 +16,7 @@ Item {
     property bool applying: false
     property bool dirty: false
 
-    readonly property string helper: "$HOME/.config/quickshell/scripts/yakushi-uistatectl.py"
+    readonly property string helper: (Quickshell.env("HOME") || "") + "/.config/quickshell/scripts/yakushi-uistatectl.py"
 
     function hexOf(c) {
         function h(v) {
@@ -56,21 +56,12 @@ Item {
             return
 
         dirty = false
-        saveProc.command = [
-            "sh", "-c",
-            "exec python3 \"" + helper + "\" set \"$1\" \"$2\"",
-            "yakushi-uistate",
-            Theme.glass.toFixed(3),
-            hexOf(Theme.accent)
-        ]
+        saveProc.command = ["python3", helper, "set", Theme.glass.toFixed(3), hexOf(Theme.accent)]
         saveProc.running = true
     }
 
     Component.onCompleted: {
-        loadProc.command = [
-            "sh", "-c",
-            "exec python3 \"" + helper + "\" get"
-        ]
+        loadProc.command = ["python3", helper, "get"]
         loadProc.running = true
     }
 

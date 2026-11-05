@@ -17,6 +17,7 @@ Item {
     Text {
         id: stateText
 
+        textFormat: Text.PlainText
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         text: sw.checked ? "ON" : "OFF"

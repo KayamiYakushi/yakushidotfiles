@@ -229,6 +229,7 @@ Item {
     Text {
         id: noteLine
 
+        textFormat: Text.PlainText
         anchors.top: rule.bottom
         anchors.topMargin: page.note === "" ? 0 : 12
         anchors.left: head.left
@@ -252,6 +253,7 @@ Item {
         topPadding: 30
 
         Text {
+            textFormat: Text.PlainText
             visible: parent.glyph !== ""
             anchors.horizontalCenter: parent.horizontalCenter
             text: parent.glyph
@@ -261,6 +263,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             text: parent.headline
             color: Theme.inkSoft
@@ -270,6 +273,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: parent.hint !== ""
             anchors.horizontalCenter: parent.horizontalCenter
             text: parent.hint
@@ -290,6 +294,7 @@ Item {
         Text {
             id: groupLabel
 
+            textFormat: Text.PlainText
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 6
             text: parent.label + "  ·  " + parent.count
@@ -300,6 +305,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.baseline: groupLabel.baseline
             text: parent.hint
@@ -316,6 +322,7 @@ Item {
         spacing: 3
 
         Text {
+            textFormat: Text.PlainText
             text: parent.key
             color: Theme.inkMute
             font.family: Theme.mono
@@ -324,6 +331,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             text: parent.value !== "" ? parent.value : "—"
             elide: Text.ElideRight
@@ -392,6 +400,7 @@ Item {
                     Text {
                         id: batteryLabel
 
+                        textFormat: Text.PlainText
                         text: "BATTERY"
                         color: Theme.inkMute
                         font.family: Theme.mono
@@ -400,6 +409,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.right: parent.right
                         anchors.baseline: batteryLabel.baseline
                         text: Math.round(entry.modelData.battery * 100) + "%"
@@ -450,6 +460,7 @@ Item {
                     height: 22
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         text: "CONNECT AUTOMATICALLY"
                         color: Theme.inkSoft
@@ -471,6 +482,7 @@ Item {
                     height: 28
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.right: forgetButton.left
                         anchors.rightMargin: 12
@@ -496,6 +508,7 @@ Item {
                         Text {
                             id: forgetText
 
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: "FORGET DEVICE"
                             color: Theme.alert

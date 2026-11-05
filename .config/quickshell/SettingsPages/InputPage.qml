@@ -338,6 +338,7 @@ Item {
 
     Text {
         id: statusLine
+        textFormat: Text.PlainText
         anchors.top: divider.bottom
         anchors.topMargin: 10
         anchors.left: parent.left
@@ -352,6 +353,7 @@ Item {
 
     Text {
         id: languageTitle
+        textFormat: Text.PlainText
         anchors.top: statusLine.bottom
         anchors.topMargin: 12
         anchors.left: parent.left
@@ -376,6 +378,7 @@ Item {
             : Theme.line
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.leftMargin: 13
             anchors.verticalCenter: parent.verticalCenter
@@ -386,6 +389,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: layoutSearch.text === ""
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
@@ -457,6 +461,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 14
                     anchors.right: codeBadge.left
@@ -482,6 +487,7 @@ Item {
                     Text {
                         id: codeText
 
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: layoutRow.code.toUpperCase()
                         color: layoutRow.current ? Theme.accent : Theme.inkSoft
@@ -494,6 +500,7 @@ Item {
                 Text {
                     id: stateIcon
 
+                    textFormat: Text.PlainText
                     anchors.right: parent.right
                     anchors.rightMargin: 14
                     anchors.verticalCenter: parent.verticalCenter
@@ -529,6 +536,7 @@ Item {
 
     Text {
         id: pointerTitle
+        textFormat: Text.PlainText
         anchors.bottom: pointerSlider.top
         anchors.bottomMargin: 8
         anchors.left: parent.left
@@ -583,6 +591,7 @@ Item {
         anchors.right: parent.right
 
         Text {
+            textFormat: Text.PlainText
             text: "-1.00  SLOW"
             color: Theme.inkMute
             font.family: Theme.mono
@@ -595,6 +604,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             text: "FAST  +1.00"
             color: Theme.inkMute
             font.family: Theme.mono
@@ -615,6 +625,7 @@ Item {
 
     Text {
         id: cursorTitle
+        textFormat: Text.PlainText
         anchors.bottom: cursorStrip.top
         anchors.bottomMargin: 8
         anchors.left: parent.left
@@ -626,6 +637,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.right: parent.right
         anchors.baseline: cursorTitle.baseline
         anchors.left: cursorTitle.right
@@ -725,6 +737,7 @@ Item {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             visible: !cursorTile.modelData.preview
                             anchors.centerIn: parent
                             text: String.fromCodePoint(0xF01BF)
@@ -735,6 +748,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.top: patch.bottom
                         anchors.topMargin: 8
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -749,6 +763,7 @@ Item {
 
                     // marks the one that comes with Yakushi
                     Text {
+                        textFormat: Text.PlainText
                         visible: cursorTile.modelData.yakushi === true
                         anchors.top: parent.top
                         anchors.right: parent.right
@@ -790,6 +805,7 @@ Item {
                 spacing: 6
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     rightPadding: 4
                     text: "SIZE"
@@ -817,6 +833,7 @@ Item {
                             : sizeMouse.containsMouse ? Theme.lineHot : Theme.line
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: sizeChip.modelData
                             color: sizeChip.current ? Theme.ink : Theme.inkSoft
@@ -842,6 +859,7 @@ Item {
                 spacing: 12
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: "SHAKE TO FIND"
                     color: Theme.inkSoft
@@ -868,6 +886,7 @@ Item {
             Text {
                 id: holdLabel
 
+                textFormat: Text.PlainText
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 width: 96
@@ -881,6 +900,7 @@ Item {
             Text {
                 id: holdShort
 
+                textFormat: Text.PlainText
                 anchors.left: holdLabel.right
                 anchors.verticalCenter: parent.verticalCenter
                 text: "SHORT"
@@ -904,6 +924,7 @@ Item {
             Text {
                 id: holdLong
 
+                textFormat: Text.PlainText
                 anchors.right: holdValue.left
                 anchors.rightMargin: 14
                 anchors.verticalCenter: parent.verticalCenter
@@ -917,6 +938,7 @@ Item {
             Text {
                 id: holdValue
 
+                textFormat: Text.PlainText
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 width: 44

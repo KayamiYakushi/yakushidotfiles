@@ -12,8 +12,6 @@ Item {
     property url previewSource: ""
     property bool hasBackground: false
     property string statusMessage: ""
-    property bool setAuthorizationHeld: false
-    property bool resetAuthorizationHeld: false
 
     function helperPath() {
         return homeDir + "/.config/quickshell/scripts/yakushi-sddmctl.py"
@@ -27,34 +25,37 @@ Item {
         statusProc.running = true
     }
 
-    function setBackground(url) {
-        if (setProc.running)
+    // Changing the system's login screen needs your password: it is asked
+    // right here (no dialog that could open behind Settings) and goes to
+    // sudo through a pipe.
+    property var pendingArgs: []       // ["set", <image>] or ["reset"], waiting for the password
+    property var lastArgs: []
+    property string secret: ""
+
+    function ask(args) {
+        if (rootProc.running)
             return
+        pendingArgs = args
+        statusMessage = ""
+        passwordAsk.error = ""
+        Qt.callLater(passwordAsk.open)
+    }
 
-        statusMessage = "Waiting for authorization..."
+    function runRoot(args, password) {
+        lastArgs = args
+        secret = password
+        statusMessage = args[0] === "set" ? "Preparing the picture..." : "Resetting..."
+        rootProc.stdinEnabled = true
+        rootProc.command = ["python3", helperPath(), "--password-stdin"].concat(args)
+        rootProc.running = true
+    }
 
-        if (hostWindow && !setAuthorizationHeld) {
-            hostWindow.beginExternalDialog()
-            setAuthorizationHeld = true
-        }
-
-        setProc.command = ["python3", helperPath(), "set", url]
-        setProc.running = true
+    function setBackground(path) {
+        ask(["set", path])
     }
 
     function resetBackground() {
-        if (resetProc.running)
-            return
-
-        statusMessage = "Waiting for authorization..."
-
-        if (hostWindow && !resetAuthorizationHeld) {
-            hostWindow.beginExternalDialog()
-            resetAuthorizationHeld = true
-        }
-
-        resetProc.command = ["python3", helperPath(), "reset"]
-        resetProc.running = true
+        ask(["reset"])
     }
 
     // first load
@@ -70,7 +71,8 @@ Item {
                     var data = JSON.parse(text)
                     page.hasBackground = data.background === true
                     page.previewSource = data.preview || ""
-                    page.statusMessage = data.message || ""
+                    if (page.statusMessage === "")
+                        page.statusMessage = data.message || ""
                 } catch (e) {
                     page.statusMessage = "Could not read login screen state."
                 }
@@ -79,58 +81,41 @@ Item {
     }
 
     Process {
-        id: setProc
+        id: rootProc
 
-        onRunningChanged: {
-            if (!running && page.setAuthorizationHeld) {
-                if (page.hostWindow)
-                    page.hostWindow.endExternalDialog()
-                page.setAuthorizationHeld = false
+        onStarted: {
+            if (stdinEnabled) {
+                rootProc.write(page.secret + "\n")
+                page.secret = ""
+                stdinEnabled = false
             }
         }
+
         stdout: StdioCollector {
             onStreamFinished: {
+                var setting = page.lastArgs[0] === "set"
                 try {
                     var data = JSON.parse(text)
 
+                    if (data.wrongPassword) {
+                        page.pendingArgs = page.lastArgs
+                        page.statusMessage = ""
+                        passwordAsk.error = "Wrong password. Try again."
+                        Qt.callLater(passwordAsk.open)
+                        return
+                    }
+                    page.statusMessage = data.message
+                        || (data.ok ? "Done." : setting ? "Could not update login background." : "Could not reset login background.")
                     if (data.ok) {
-                        page.hasBackground = true
-                        page.statusMessage = data.message || "Login background updated."
-                    } else {
-                        page.statusMessage = data.message || "Could not update login background."
+                        page.hasBackground = setting
+                        if (!setting)
+                            page.previewSource = ""
+                        return
                     }
                 } catch (e) {
-                    page.statusMessage = "Could not update login background."
+                    page.statusMessage = setting ? "Could not update login background." : "Could not reset login background."
                 }
-            }
-        }
-    }
-
-    Process {
-        id: resetProc
-
-        onRunningChanged: {
-            if (!running && page.resetAuthorizationHeld) {
-                if (page.hostWindow)
-                    page.hostWindow.endExternalDialog()
-                page.resetAuthorizationHeld = false
-            }
-        }
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    var data = JSON.parse(text)
-
-                    if (data.ok) {
-                        page.hasBackground = false
-                        page.previewSource = ""
-                        page.statusMessage = data.message || "Login background reset."
-                    } else {
-                        page.statusMessage = data.message || "Could not reset login background."
-                    }
-                } catch (e) {
-                    page.statusMessage = "Could not reset login background."
-                }
+                page.loadState()           // show what the login screen really has
             }
         }
     }
@@ -165,6 +150,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             text: "SDDM"
             color: Theme.inkSoft
             font.family: Theme.mono
@@ -210,6 +196,7 @@ Item {
                 spacing: 6
 
                 Text {
+                    textFormat: Text.PlainText
                     text: "薬"
                     color: "#ff003c"
                     font.family: "Noto Sans CJK JP"
@@ -218,6 +205,7 @@ Item {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     text: page.hasBackground
                         ? "CUSTOM LOGIN BACKGROUND"
                         : "DEFAULT DARK LOGIN"
@@ -241,6 +229,7 @@ Item {
                 border.color: Theme.accent
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "CHOOSE BACKGROUND"
                     color: Theme.ink
@@ -266,6 +255,7 @@ Item {
                 opacity: page.hasBackground ? 1.0 : 0.45
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "RESET"
                     color: Theme.inkSoft
@@ -283,7 +273,28 @@ Item {
             }
         }
 
+        PasswordRow {
+            id: passwordAsk
+
+            width: parent.width
+            visible: page.pendingArgs.length > 0
+            label: page.pendingArgs[0] === "reset" ? "Your password, to reset the login background"
+                                                    : "Your password, to change the login background"
+            action: page.pendingArgs[0] === "reset" ? "RESET" : "SET"
+            onAccepted: function(password) {
+                var args = page.pendingArgs
+                page.pendingArgs = []
+                page.runRoot(args, password)
+            }
+            onCanceled: {
+                page.pendingArgs = []
+                page.statusMessage = "Cancelled. Nothing was changed."
+                page.loadState()
+            }
+        }
+
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             text: page.statusMessage !== ""
                 ? page.statusMessage
@@ -295,8 +306,9 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             width: parent.width
-            text: "The selected image is copied to the system SDDM theme after Polkit authorization. Your source file stays untouched."
+            text: "The picture is made into a clean PNG as you (never opened as root), then copied into the system SDDM theme with your password. Your file stays untouched."
             color: Theme.inkMute
             font.family: Theme.mono
             font.pixelSize: 9

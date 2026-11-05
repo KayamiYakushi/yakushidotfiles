@@ -148,6 +148,7 @@ Rectangle {
 
     // ---- small parts
     component Caption: Text {
+        textFormat: Text.PlainText
         color: Theme.inkSoft
         font.family: Theme.mono
         font.pixelSize: 9
@@ -161,6 +162,7 @@ Rectangle {
         spacing: 3
 
         Text {
+            textFormat: Text.PlainText
             text: parent.key
             color: Theme.inkMute
             font.family: Theme.mono
@@ -169,6 +171,7 @@ Rectangle {
         }
 
         Text {
+            textFormat: Text.PlainText
             width: parent.width
             text: parent.value !== "" ? parent.value : "—"
             elide: Text.ElideRight
@@ -196,6 +199,7 @@ Rectangle {
         Text {
             id: chipText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: chip.label
             color: chip.on ? Theme.ink : Theme.inkSoft
@@ -245,6 +249,7 @@ Rectangle {
             Keys.onEnterPressed: field.accepted()
 
             Text {
+                textFormat: Text.PlainText
                 visible: input.text === "" && !input.activeFocus
                 anchors.verticalCenter: parent.verticalCenter
                 text: field.hint
@@ -275,6 +280,7 @@ Rectangle {
         Text {
             id: actText
 
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: act.label
             color: act.danger ? Theme.alert : Theme.ink
@@ -303,6 +309,7 @@ Rectangle {
         spacing: 12
 
         Text {
+            textFormat: Text.PlainText
             visible: panel.info === null
             text: panel.message !== "" ? panel.message : "Reading the settings..."
             color: Theme.inkSoft
@@ -332,6 +339,7 @@ Rectangle {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: panel.info !== null && !panel.info.active
             width: parent.width
             wrapMode: Text.WordWrap
@@ -399,6 +407,7 @@ Rectangle {
             }
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 elide: Text.ElideRight
                 text: panel.dnsPick === "auto" ? "From your router (DHCP)."
@@ -498,6 +507,7 @@ Rectangle {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.left: forgetButton.visible ? forgetButton.right : parent.left
                 anchors.leftMargin: forgetButton.visible ? 12 : 0
                 anchors.right: saveButton.left

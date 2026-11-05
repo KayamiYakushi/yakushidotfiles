@@ -14,9 +14,9 @@ state="$HOME/.config/quickshell/yakushi-topbar.local.json"
 island_qml="$HOME/.config/quickshell/topbar-shell.qml"
 runtime_root="${XDG_RUNTIME_DIR:-/tmp/yakushi-$(id -u)}/yakushi"
 pid_file="$runtime_root/topbar.pid"
-log_file="/tmp/yakushi-topbar.log"
+log_file="$runtime_root/topbar.log"       # your private runtime folder, not /tmp
 
-mkdir -p "$runtime_root"
+mkdir -p -m 700 "$runtime_root"
 
 style() {
     if [ -r "$state" ] && grep -q '"style"[[:space:]]*:[[:space:]]*"waybar"' "$state"; then
@@ -26,10 +26,13 @@ style() {
     fi
 }
 
+# the bar's pid, only if that process really is the bar (a pid number can be
+# reused by another program after the bar has gone)
 island_pid() {
     [ -r "$pid_file" ] || return 1
     pid="$(cat "$pid_file" 2>/dev/null)"
-    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && echo "$pid"
+    case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+    grep -qa -- "topbar-shell.qml" "/proc/$pid/cmdline" 2>/dev/null && echo "$pid"
 }
 
 island_running() {
@@ -57,7 +60,7 @@ start_island() {
 
 start_waybar() {
     waybar_running && return 0
-    setsid waybar >/tmp/yakushi-waybar.log 2>&1 </dev/null &
+    setsid waybar >"$runtime_root/waybar.log" 2>&1 </dev/null &
 }
 
 start() {

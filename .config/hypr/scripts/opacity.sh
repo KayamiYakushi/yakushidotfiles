@@ -14,5 +14,5 @@ case "$pct" in
 esac
 
 value="$(awk -v p="$pct" 'BEGIN { printf "%.1f", p / 100 }')"
-sed -i -E "s/\b(active_opacity|inactive_opacity)( *= *)[0-9.]+/\1\2$value/" "$conf"
+sed -i --follow-symlinks -E "s/\b(active_opacity|inactive_opacity)( *= *)[0-9.]+/\1\2$value/" "$conf"
 hyprctl reload >/dev/null

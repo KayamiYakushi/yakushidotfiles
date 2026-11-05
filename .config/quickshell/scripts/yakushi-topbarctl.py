@@ -30,6 +30,41 @@ import sys
 import tempfile
 from pathlib import Path
 
+
+def write_safely(path, text: str) -> None:
+    """Write a config file in place (same file, so watchers and symlinks keep
+    working), but only after a trial copy proved the disk has room for it: on
+    a full disk the old file stays whole instead of ending up empty."""
+    real = os.path.realpath(path)
+    data = text.encode()
+    trial = os.path.join(os.path.dirname(real), "." + os.path.basename(real) + ".yakushi-new")
+    try:
+        with open(trial, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        try:
+            os.unlink(trial)
+        except OSError:
+            pass
+    try:
+        with open(real, "rb") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    try:
+        with open(real, "r+b" if old is not None else "wb") as f:
+            f.write(data)
+            f.truncate()
+    except OSError:
+        if old is not None:                      # put the old one back
+            with open(real, "r+b") as f:
+                f.write(old)
+                f.truncate()
+        raise
+
+
 HOME = Path.home()
 DIR = HOME / ".config/quickshell"
 STATE = DIR / "yakushi-topbar.local.json"
@@ -260,7 +295,7 @@ def sync_waybar_clock(state: dict) -> None:
     new_body = re.sub(r'("interval"\s*:\s*)\d+', lambda m: m.group(1) + ("1" if state["seconds"] else "60"),
                       new_body, count=1)
     if new_body != body:
-        WAYBAR_CONFIG.write_text(text[:start] + new_body + text[end:])
+        write_safely(WAYBAR_CONFIG, text[:start] + new_body + text[end:])
         try:
             subprocess.run(["pkill", "-SIGUSR2", "-x", "waybar"], capture_output=True, timeout=5)
         except (OSError, subprocess.TimeoutExpired):

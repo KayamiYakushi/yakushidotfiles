@@ -23,6 +23,7 @@ Item {
     Text {
         id: iconText
 
+        textFormat: Text.PlainText
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         width: 22
@@ -33,6 +34,7 @@ Item {
     }
 
     Text {
+        textFormat: Text.PlainText
         anchors.left: iconText.right
         anchors.right: stateText.left
         anchors.rightMargin: 8
@@ -48,6 +50,7 @@ Item {
     Text {
         id: stateText
 
+        textFormat: Text.PlainText
         anchors.right: track.left
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter

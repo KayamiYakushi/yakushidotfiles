@@ -190,7 +190,9 @@ mkdir -p "$HOME/.cache/quickshell/wallpaper-index"
 mkdir -p "$HOME/.cache/quickshell/thumbs"
 
 # Detect stable hwmon paths once; Waybar reads sysfs natively at runtime.
+# (Only the Waybar style uses this; the island bar finds its sensors itself.)
 python3 "$HOME/.config/waybar/scripts/generate-hardware-local.py"
+or echo "  (Waybar temperatures skipped: no sensor information could be written)"
 
 # Match the terminal (kitty, alacritty, foot, ghostty) and fish colours to the
 # theme; Settings -> Appearance -> Terminal turns this off and restores them.
@@ -199,10 +201,6 @@ python3 "$HOME/.config/quickshell/scripts/yakushi-termctl.py" enable >/dev/null 
 or echo "  (skipped: no supported terminal found)"
 python3 "$HOME/.config/quickshell/scripts/yakushi-themesync.py" >/dev/null 2>&1
 or true
-or begin
-    echo "ERROR: Hardware sensor configuration generation failed."
-    exit 1
-end
 
 echo
 echo "Installing SDDM system files..."

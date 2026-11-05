@@ -38,6 +38,7 @@ Rectangle {
         spacing: 6
 
         Text {
+            textFormat: Text.PlainText
             text: Qt.formatTime(root.now, "HH:mm")
             color: "#ffffff"
             font.family: "JetBrainsMono Nerd Font"
@@ -46,6 +47,7 @@ Rectangle {
         }
 
         Text {
+            textFormat: Text.PlainText
             text: Qt.formatDate(root.now, "dddd · dd MMMM")
             color: "#b0b0b0"
             font.family: "JetBrainsMono Nerd Font"
@@ -74,6 +76,7 @@ Rectangle {
                 spacing: 12
 
                 Text {
+                    textFormat: Text.PlainText
                     text: "薬"
                     anchors.verticalCenter: parent.verticalCenter
                     color: "#ff003c"
@@ -83,6 +86,7 @@ Rectangle {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     text: "LOGIN"
                     anchors.verticalCenter: parent.verticalCenter
                     color: "#ffffff"
@@ -96,6 +100,7 @@ Rectangle {
             Item { width: 1; height: 5 }
 
             Text {
+                textFormat: Text.PlainText
                 text: "WELCOME BACK"
                 color: "#e8e8e8"
                 font.family: "JetBrainsMono Nerd Font"
@@ -113,6 +118,7 @@ Rectangle {
                 border.color: userEntry.activeFocus ? "#70FFFFFF" : "#24FFFFFF"
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
@@ -123,6 +129,7 @@ Rectangle {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: userEntry.text.length === 0
                     anchors.left: parent.left
                     anchors.leftMargin: 44
@@ -165,6 +172,7 @@ Rectangle {
                 border.color: passwordEntry.activeFocus ? "#70FFFFFF" : "#24FFFFFF"
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.left: parent.left
                     anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
@@ -175,6 +183,7 @@ Rectangle {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: passwordEntry.text.length === 0
                     anchors.left: parent.left
                     anchors.leftMargin: 44
@@ -210,6 +219,7 @@ Rectangle {
 
             Text {
                 id: message
+                textFormat: Text.PlainText
                 width: parent.width
                 height: 14
                 text: ""
@@ -225,6 +235,7 @@ Rectangle {
                 color: signInMouse.containsMouse ? "#e6e6e6" : "#ffffff"
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "SIGN IN"
                     color: "#080808"
@@ -273,6 +284,7 @@ Rectangle {
                             spacing: 8
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: powerPill.modelData.glyph
                                 color: "#bbbbbb"
@@ -281,6 +293,7 @@ Rectangle {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: powerPill.modelData.label
                                 color: "#bbbbbb"

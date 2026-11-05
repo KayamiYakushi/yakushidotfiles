@@ -67,6 +67,7 @@ Item {
         Text {
             id: icon
 
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: v.muted
                 ? String.fromCodePoint(0xF075F)
